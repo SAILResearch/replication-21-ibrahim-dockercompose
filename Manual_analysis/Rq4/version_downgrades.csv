@@ -1,0 +1,108 @@
+commit_hash,old_val,new_val,change_type,
+73aecaa9d7e4f116344135f5b183b598d06c4e06,2.1,2,minor,unknown
+317827af9d619bd2b2b3617eb39ee68b28d1f5b2,3.2,2,major,volume_from not supported
+a00e2b610760f619871ea9097ba18153034c9945,2.3,2,minor,unknown
+561458de643d157053e49e71a9be77529217e65f,3,2.3,major,unknown
+4b3d752290c3ff9cfc0044139c4c7da77fe4bfc0,2.1,2,minor,unknown
+02a527bfb3a429f059f87877be6642c000f7df05,3,2,major,unknown
+34a040066d51eec4dd09224fa52cd904f1db83de,3,2,major,extends not supported
+03186a36a3b82ae8a738df908431b4bd291b3ba2,3,2.1,major,unknown
+06e80647c560ee9b41b384514277a644237b6857,3.7,3,minor,unknown
+44e93ce70f55221613f58b4983624fee4412999e,3,2,major,cloud platform support
+046344ec86a82c706745268d914aeb7d96296988,3,2,major,unknown
+284beb7b6a5d38fe569c8d36b8dd1eec6cd466bf,3,2,major,unknown
+3a1ae637aa76cb38df9c2ba542b46c7d0e065b42,3.1,2,major,unknown
+89ee7eb4b5330d7bac767c6ac664e6bb9b55a6e0,4,3,major,invalid version number
+21e97e11be135dc38984e8f410631bbfc99a124e,5,4,major,invalid version number
+9cafdcea7f3df5a02627284b91424499c6916dfa,4,3.6,major,invalid version number
+c64573263e0486b4186a87e7eec7aaf698c1ef32,3.6,3.2,minor,unknown
+f63ab76cf8b2d3e95a6170f5625b4017284a9318,3,2,major,mem_limit not supported
+0726c249e090f73d28d6f2f7d1cfe93a1ae70fe9,2.1,2,minor,unknown
+010e95abceae094a2663f92504c6ca2f85ad456e,3,2.1,major,unknown
+64457719e1eb9740f3f5eb94d284fcde57da6726,3,2.1,major,unknown
+bd4efd40092d6ff2d42884855bea3c2b652b2fae,3,2.1,major,unknown
+322251f1cd2510696b11db41ff2050dc824d6ac7,3.3,3,minor,unknown
+3141abb6ea0489b9e6032b0a4aedf4fd077175cf,3,2,major,unknown
+8b90b66a2c9274b83ca314b157315e99003496ca,3.3,3,minor,unknown
+408efbf29e53605a9b683c4f6524a6f2024cd4c0,3.7,3,minor,unknown
+6d072fe2a9a928a962a38f64208a69cd0ed2d2c1,3.7,3,minor,unknown
+873a43337ef21fb3d1f4bb4f5045a01bfb93f6a6,3,2,major,unknown
+1969addf60acf1694611df544b3d2dca1431200d,3,2,major,unknown
+e97c0b9074c4fffd41cdcc5666951a36d1570c43,3,2,major,cloud platform support
+87fed4de2d0f06546182562b32f15588b5da6560,3,2,major,compatibility
+5ad7188ec93d91e8cccfe566e7512363d582e8fe,3,2,major,unknown
+7e14d97b7868185d40fbc75a666b0e570898f932,3.4,3,minor,compatibility
+f7ed8a43ac3d49a4f9ccfcc6089576af74e6def6,3,2,major,unknown
+415b146e9c04fae5a61fd33c3a0fade48e1c9ad2,3,2,major,unknown
+d4a8b1e697d3a536c3a0c441d40fe62be2f578e9,3.7,3,minor,compatibility
+259340b3f9e06e7e74269b19c06f9edfffad6038,3,2,major,unknown
+40b140d7f0f25afd527f0a86cc6a6e78c5083667,3,2,major,invalid version
+3aa0f76dc030d535f92b11ce27fc7e6aa76f03fc,3.7,3,minor,unknown
+ea27f3523263ad152a8c69b8e6395e4235dfef36,3,2,major,unsupported compose version
+d0f8545cc3d004c2b861a47651d4643507dbb7dd,3,2,major,unknown
+ff32b64d3f6f27f80dedc4060022507a45f6253c,2,1,major,typo
+8b07f4a9cfa69ba822c60b566695196a27e7fc3d,2.1,2,minor,unknown
+762f29e1b599984e13f1accc0dd926ce357e1180,3,2,major,compatibility
+e16210b78f71b4a6418ff8ff6c0ed5232d754fe5,2.2,2,minor,unknown
+60b622c9f0f997c09b2d2ab49eb69fadc8c9b838,2.1,2,minor,unknown
+556e6b2edd924bbb3d7cde1196a756caf5fca691,3.2,3,minor,unknown
+b6bfe82ee261f2aeaf730b07f14c7d166f507e37,3,2,major,unknown
+df934b21fd2df217c9a777ba20bd1055937214d0,3.2,2.2,major,unknown
+12a6e2f4d1b61de560008c9347cf258c58eb384f,3,2,major,unknown
+a7423ab6a28de8473bcdf6adec96b4b77663d674,3,2,major,unknown
+35ff912bdb8d39d5a77572a926a505a0b2a5a515,3,2,major,unknown
+486807653554d67ea716bab7443295492f594025,2.1,2,minor,unknown
+47453927658a1b263fd7a32c825b74e98cdd1fcc,3,2,major,unknown
+ed4c22d6e6090819b92cb61211d0e1b254f91969,3,2.1,major,volumes_from not supported
+1f8e2045e16453bfc70eda9f1405a2e2260176b1,3,2.1,major,condition not supported under depends_on
+465a690619023ae7e63818d76c11cf7a64f46362,3.1,2.1,major,volume_from not supported
+9e7cc549ba77ffc5c7b8d2ab6e6f20475f3fa359,3,2,major,unknown
+be0aa497efb8cc99df91628b909a97831e098067,3.2,2,major,unknown
+69912137d1db09144217dae8aab53b8042e4db03,3,2,major,unknown
+54d78209680e5c3984dea4cbdb4aee60fc0a533f,3,2,major,unknown
+0580053b928fe733bf07a08dc6934e5eb48a4e49,3.1,3,minor,unknown
+3cdfb3715f97d6b0e3cafc6416c70c1f48c3e090,3,2,major,link with environment not supported
+7c2f3128d439b3137c590065c3bec62ec7bfc501,3,2,major,unknown
+ca5beac4ec6ad54887f57020bcb1671443f59e26,3,2,major,unknown
+c31229ad01acf0773046a0714532c1cbc7f61ff2,3,2,major,unknown
+114c9573d6e404419695ffa104ada81aa67b10de,3.5,3.3,minor,unknown
+e4b91d456e8c6800aa4d0ba81d8416fa7b18341e,3,2,major,unknown
+5f11586ddab2342a82941238c43c6fcb89758660,3,2,major,unknown
+bd6eaf7373985f48613bea3551934dcd71094085,3.3,3,minor,unknown
+149642aa31a003afedef776b1efcddece7e5a129,3,2.1,major,unknown
+072014047d6fd3d1631f9283a50d9ffb8ac29b17,3.4,3,minor,unknown
+dde5ff3709401023f3ec52cc5d9e86c9014bdae5,3,2,major,Travis doesnt support version 3 yet
+edf23224211704f5db6a44963d8ab52788f6d012,3,2,major,unknown
+ff23bab755241a715f4b1ed511b21ea9fdd73ba0,3.6,2.4,major,aws compatibility issue
+fcfe4041ad8a95824765146af9b6fb3bbb315b44,3,2,major,unknown
+ef50508fe2026a602fd573e8b7eabc0cb24f73de,3,2,major,unknown
+718798768bb5891d8cc459fd91768a3c3c92139e,3,2.4,major,unknown
+8bf96dc4c96e0b82c7dd0d53e061f859ac725cc7,3,2.4,major,unknown
+19123da5228a5d003a35af3450d147c8f1ed5df9,3,2,major,Docker compatibility issue
+33424f60df49cdc8b4f0914d5a1dd03d01835977,3,2.1,major,unknown
+748fe211c962927d828c160179db709dc31155bf,3.2,3,minor,unknown
+d548f3e2283501a51f6b479ca8e442424f6b6444,3,2,major,unknown
+460c27299c36121efd62c0a2f6c6bbc1a5b0c44a,3,2,major,unknown
+8e84ac4151ff33c9b5a4b4a3ee9f79308d5735ac,3,2,major,unknown
+ada23e58a2988d15785818eb9501a3df04d374f2,3,2,major,unknown
+0cfb0762883c6159c915283af235ecc60dd254a9,3.1,2.1,major,unknown
+e3f61fdadacfc1f3becd27021b7ccd550c9a9104,3,2.1,major,unknown
+79883850724e2c629f1995ba677fccc3aae34185,3,2,major,unknown
+cd99155977e6a55cac8bc745199abb2f6ecad977,3.7,3,minor,unknown
+6ca5e59fa7d93e7637a03552c22b6fc6ccbde1e5,3,2,major,Travis doesnt support version 3 yet
+a250d785b1b89f13f54c7f3bb0713aa998e81049,2.1,2,minor,unknown
+f814de4390cec4f87000b4d2e96e3c7273782c7c,3.3,3,minor,unknown
+d7aafc14661820b5449e73e8aa0a299a61ab57c1,3,2,major,unknown
+89dedd64dc07e5760a3a258bcfe4632b167200c9,3.6,3.3,minor,compatibility
+14ab793b0122f32050682fd33e0a40ce50d86d2f,3,2,major,volume_from not supported
+01546fc4bb994f0b0ddfd5fc815d9c789ecbe4e4,3,2,major,unknown
+38a0c1397a529e037f0650af9dd99ea350ecb87a,3.3,2,major,unknown
+19d05e00664d5e75f5eefe7ef36904ab32f72a7d,3.3,3,minor,unknown
+06af6b158779f07106fbdb488b3b9e6c07109e15,3.6,2,major,compatibility
+d48b1ea1a9e5e45828f728bcac27dbba591e2101,3,2.1,major,unknown
+f2b51ab06803d2e76e9d5a9ee3eda6b7f1ac62b6,3,2,major,unknown
+7c9d765d1debb95a5fdbc6b5f3d1ae475e386c67,3,2,major,unknown
+a8d0a2507e1d65fbb5a8a0cb900004d237f166bf,2.3,2,minor,unknown
+8514d49359cfa7e991f7c109a05efa3f17fe90e8,3,2.1,major,unknown
+ea43231e16be2f97c97cc44999d79f43543d7f77,3.2,3,minor,unknown
+482cd31eee199a188d41482c9cb254e6dd2a0e65,3.2,3,minor,unknown

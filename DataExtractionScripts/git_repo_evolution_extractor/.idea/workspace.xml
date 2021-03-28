@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a72abb2b-cc29-4b89-9ee2-85b73991d3c7" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/../docker-compose-parser/compose_project_counter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/(manual)old_version_downgrades.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/(manual)version_downgrades.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/(manual_weighted)sampled_feature_commits (Autosaved).csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/(valid)feature_changes_by_commit_pivot.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/[manual]sampled_feature_commits.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/[manual]version_downgrades.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/[manual_weighted]sampled_feature_commits.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/category_descriptions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/compose_features.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/compose_images.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/compose_project_evolution.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/feature_changes_by_commit.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/filtered_by_commit_count_compose_projects.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/image_changes_by_commit.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/number_of_image_changes_by_commit.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/old/compose_features.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/old/compose_features.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/old/compose_images.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/old/compose_images.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/old/compose_project_evolution.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/old/compose_project_evolution.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/old/feature_changes_by_commit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/old/feature_changes_by_commit.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/old/image_changes_by_commit.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/old/image_changes_by_commit.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/root_compose_projects_commit_count_100.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/selected_projects_filtered_by_commit_count.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/unique_features_across_all_version.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/unused_features.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/version-features/version1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/version-features/version1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/version-features/version2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/version-features/version2.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/version-features/version3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../Data/version-features/version3.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Data/version_changes_by_commit.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docker-compose-parser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../docker-compose-parser/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docker-compose-parser/docker-compose-parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/../docker-compose-parser/docker-compose-parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../git_repo_cloner/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../git_repo_cloner/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/git_repo_evolution_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/git_repo_evolution_extractor.py" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/git_repo_evolution_extractor$git_repo_evolution_extractor.coverage" NAME="git_repo_evolution_extractor Coverage Results" MODIFIED="1562783930130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/git_repo_evolution_extractor.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-3196">
+              <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>commit_diff_csv</find>
+      <find>get_diff</find>
+      <find>size</find>
+      <find>get_path_and_size</find>
+      <find>loc</find>
+      <find>open</find>
+      <find>gene</find>
+      <find>general_history_output_file_path</find>
+      <find>general_history_csv_param</find>
+      <find>general_history_csv</find>
+      <find>delete</find>
+      <find>dir</find>
+      <find>compose_file_general_history_csv</find>
+      <find>version</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/git_repo_evolution_extractor.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1176" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
+    <property name="js.eslint.eslintPackage" value="" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path" value="C:/Program Files/nodejs/node" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="git_repo_evolution_extractor" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="git_repo_evolution_extractor" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="git_repo_evolution_extractor" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/git_repo_evolution_extractor.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.git_repo_evolution_extractor" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a72abb2b-cc29-4b89-9ee2-85b73991d3c7" name="Default" comment="" />
+      <created>1561577843259</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1561577843259</updated>
+      <workItem from="1562361131805" duration="621000" />
+      <workItem from="1562858494813" duration="51709000" />
+      <workItem from="1564597297040" duration="10670000" />
+      <workItem from="1565793012000" duration="4903000" />
+      <workItem from="1567033951352" duration="1803000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="69706000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="0" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26066098" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32885906" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39980826" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.32981783" />
+      <window_info anchor="bottom" id="Python Console" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="12" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="right" id="SciView" order="4" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="number_of_images_in_old_version" language="Python" />
+        <watch expression="selected_projects['owner']" language="Python" />
+        <watch expression="selected_projects.isin([owner])" language="Python" />
+        <watch expression="selected_projects" language="Python" />
+        <watch expression="'/'.join([owner, repo_name])" language="Python" />
+        <watch expression="'\\'.join([owner_repos_base_path, repo_name])" language="Python" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/git_repo_evolution_extractor$git_repo_evolution_extractor.coverage" NAME="git_repo_evolution_extractor Coverage Results" MODIFIED="1567038658931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="watch">
+      <expression>
+        <expression-string>'\\'.join([owner_repos_base_path, repo_name])</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>'/'.join([owner, repo_name])</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>selected_projects</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>selected_projects.isin([owner])</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>selected_projects['owner']</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>number_of_images_in_old_version</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$USER_HOME$/AppData/Roaming/Python/Python37/site-packages/pandas/core/generic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="1555" selection-start-line="1555" selection-end-line="1555" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/git_repo_evolution_extractor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3196">
+          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

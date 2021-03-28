@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1568394037125.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "378C57B4",
+    "lastKnownWriteTime" : 1568394048,
+    "last_content_update" : 1568394048930,
+    "path" : "~/replication-docker-compose/Docker-Compose-Paper/rqs/scripts/rq2.R",
+    "project_path" : "rqs/scripts/rq2.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,39 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here, reshape, sqldf, splitstackshape, stringr, dplyr, DescTools)
+
+version_changes = read.csv(file = here("rqs/data","version_changes_by_commit.csv"), header =
+                             TRUE, sep = ",")
+version_changes$owner_project = paste(version_changes$owner_id, version_changes$project_name, sep = "/")
+
+feature_changes = read.csv(file = here("rqs/data","feature_changes_by_commit.csv"), header =
+                             TRUE, sep = ",")
+
+
+version_changes = unique(sqldf("select version_changes.owner_project, version_changes.old_val, version_changes.new_val, feature_changes.changed_feature
+      from version_changes inner join feature_changes
+      on version_changes.commit_hash = feature_changes.commit_hash"))
+
+x<-version_changes %>% 
+  group_by (old_val , new_val) %>%
+  summarise(NumMigrantProjects = length(unique(owner_project)))
+
+version_changes<-unique(sqldf("select version_changes.owner_project, version_changes.old_val, version_changes.new_val, version_changes.changed_feature, x.NumMigrantProjects
+      from version_changes inner join x
+      on version_changes.old_val = x.old_val and version_changes.new_val = x.new_val "))
+
+y<-version_changes %>% 
+  group_by(old_val , new_val, changed_feature, NumMigrantProjects) %>%
+  summarise(l = length(unique(owner_project)))
+
+y$percentage<-(y$l/y$NumMigrantProjects)
+
+# we consider the migration between different docker-compose versions that happened in at least 10 projects
+# and 40% of the upgraders change the same option
+# We did not find a clear pattern
+View(y[which(y$NumMigrantProjects>=10 & y$percentage >= 0.4 & y$percentage < 1),])
+
+
+
+
+
+

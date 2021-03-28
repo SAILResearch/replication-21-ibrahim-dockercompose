@@ -1,0 +1,500 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here, reshape, sqldf, splitstackshape, stringr)
+
+compose_file_features = read.csv(here("rqs/data","compose_features.csv"), header = TRUE, sep = ",")
+
+
+compose_feature_categories = read.csv(here("rqs/data","feature_categories.csv"), header = TRUE, sep = ",")
+#hack
+compose_file_features[compose_file_features$version == 'n', c("version")] = ""
+
+compose_file_features$version = as.character(compose_file_features$version)
+
+
+compose_file_features$owner_project = paste(compose_file_features$owner_id, compose_file_features$project_name, sep = "/")
+compose_file_features$feature = trimws(compose_file_features$feature)
+
+version_info = sqldf("select owner_project, version from compose_file_features group by owner_project, version")
+
+version_info[version_info$version == "" ,'version'] = "1"
+version_info$version_num = as.numeric(version_info$version)
+version_info$version_split = version_info$version
+version_info = cSplit(version_info, 'version_split', sep = ".")
+colnames(version_info) = c("owner_project", "version", "version_num", "major_version", "minor_version")
+
+#how many projects do not specify a minor version?
+version_info_2_3 = version_info[version_info$version != "1",]
+print(nrow(version_info_2_3[is.na(version_info_2_3$minor_version),])/nrow(version_info_2_3)*100)
+
+#version_info[is.na(version_info$minor_version), 'minor_version'] = 0
+#version_info$version = floor(as.numeric(version_info$version))
+
+
+version_counts = sqldf("select version_num as version, count(*) as count from version_info group by version_num")
+
+version_counts$percentage = round(version_counts$count/sum(version_counts$count)*100, 2)
+
+#version_counts$version = as.numeric(version_counts$version)
+
+version_counts = version_counts[version_counts$percentage > 0.1,]
+#version_counts$version = format(round(version_counts$version, 1), nsmall = 1)
+
+#version_counts = version_counts[order(version_counts$version, decreasing = TRUE),]
+
+#version_counts$version = as.character(version_counts$version)
+
+# missing_versions = version_counts[version_counts$version == "missing",]
+# version_counts = version_counts[version_counts$version != "missing",]
+# 
+# version_counts = rbind(missing_versions, version_counts)
+version_counts$version = as.numeric(version_counts$version)
+version_counts$version = sprintf("version %.1f", version_counts$version)
+version_counts$version = as.character(version_counts$version)
+version_counts = version_counts[order(version_counts$version, decreasing = TRUE),]
+version_counts$version = factor(version_counts$version, level = version_counts$version)
+
+
+ggplot(version_counts
+       , aes(version, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=version, ymin = 0, ymax = percentage))+
+  geom_point(aes(x = reorder(version, version), y = percentage))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,45))
+
+
+
+ggplot(version_counts, aes("", percentage, fill = version)) +
+  geom_bar(width = 0.5, size = 1, color = "gray", stat = "identity") +
+  coord_polar("y") +
+  geom_text(aes(label = sprintf("%s\n %.1f%%", version, percentage)), 
+            position = position_stack(vjust = 0.5), size=6) +
+  labs(x = NULL, y = NULL, fill = NULL) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  scale_fill_manual(values = c("white", "white", "white")) +
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(), 
+        legend.position ="none",
+        legend.key.size = unit(1.1, "cm"))
+
+# complete_compose_file_features = compose_file_features[compose_file_features$version != "",]
+# 
+# 
+# actual_compose_features = unique(complete_compose_file_features[complete_compose_file_features$level != 2 & complete_compose_file_features$level != 4,]$feature)
+
+compose_file_actual_features = compose_file_features[compose_file_features$feature %in% compose_feature_categories$Feature, ]
+
+compose_file_actual_features = sqldf("select compose_file_actual_features.*, compose_feature_categories.Category  
+      from compose_file_actual_features 
+      left outer join compose_feature_categories on 
+      compose_file_actual_features.feature = compose_feature_categories.Feature")
+
+feature_counts_by_project = sqldf("select feature, count(distinct owner_project) as count from compose_file_actual_features group by feature")
+feature_count_for_each_category = sqldf("select * from compose_file_actual_features ")
+feature_category_count_by_project = sqldf("select Category, count(distinct owner_project) as count from compose_file_actual_features group by Category")
+
+feature_counts_by_project$percentage = round(feature_counts_by_project$count/length(unique(compose_file_actual_features$owner_project))*100, 2)
+feature_category_count_by_project$percentage = round(feature_category_count_by_project$count/length(unique(compose_file_actual_features$owner_project))*100, 2)
+
+feature_counts_by_project$feature = as.character(feature_counts_by_project$feature)
+feature_category_count_by_project$Category = as.character(feature_category_count_by_project$Category)
+# feature_counts_by_project$feature[feature_counts_by_project
+#                                 $percentage < 20] = "Other" 
+#
+# others = sum(feature_counts_by_project
+#             [feature_counts_by_project
+#                                       $feature == "Other",]$percentage)
+# 
+# feature_counts_by_project= feature_counts_by_project[feature_counts_by_project
+#                                                     $feature != "Other",]
+#feature_counts_by_project$count = NULL
+
+feature_counts_by_project = feature_counts_by_project[order(feature_counts_by_project
+                                                            $percentage, decreasing = FALSE),]
+
+feature_category_count_by_project = feature_category_count_by_project[order(feature_category_count_by_project
+                                                                            $percentage, decreasing = FALSE),]
+
+#feature_counts = rbind(data.frame(feature="Others", percentage=others), feature_counts)
+
+
+feature_counts_by_project$feature = factor(feature_counts_by_project
+                                           $feature, level = feature_counts_by_project
+                                           $feature)
+
+feature_category_count_by_project$Category = factor(feature_category_count_by_project
+                                                    $Category, level = feature_category_count_by_project
+                                                    $Category)
+
+ggplot(feature_counts_by_project
+       , aes(feature, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(feature, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = feature, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,90))
+
+ggplot(feature_category_count_by_project
+       , aes(Category, percentage, label = sprintf("%.1f%% (%i)", percentage, count)))+
+  geom_linerange(aes(x=reorder(Category, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = Category, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.1, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects (# of projects)")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,125))
+
+######## project category count #############
+category_feature_count = sqldf("select category, count(*) as count from compose_feature_categories group by Category")
+each_project_category_count = sqldf("select owner_project, Category, count(distinct feature) as count from compose_file_actual_features group by owner_project, Category")
+
+each_project_category_count = sqldf("select each_project_category_count.*, category_feature_count.count as total_feature_count 
+                                                    from each_project_category_count left outer join 
+                                                   category_feature_count on 
+                                                   each_project_category_count.Category = category_feature_count.category")
+
+each_project_category_count$percentage_used = round(each_project_category_count$count/each_project_category_count$total_feature_count*100)
+each_project_category_count_category_count = each_project_category_count
+each_project_category_count_category_count$Category_with_count = sprintf("%s (%s)", each_project_category_count_category_count$Category, each_project_category_count_category_count$total_feature_count)
+
+medians = aggregate(percentage_used ~  Category_with_count, each_project_category_count_category_count, median)
+print("median of median:")
+print(median(medians$percentage_used))
+
+ggplot(each_project_category_count_category_count, aes(x=reorder(Category_with_count, percentage_used, median), y=percentage_used)) + 
+  #geom_violin(trim = FALSE)+
+  geom_boxplot(width=0.8)+
+  coord_flip()+
+  #geom_violin()+
+  scale_y_continuous(trans = "log1p", breaks = c(0,1,5,10,25,50,100))+
+  theme_bw()+ 
+  theme(axis.text.x = element_text(size = 10))+
+  xlab("")+
+  ylab("% of options used by the projects")
+
+owner_project_category = sqldf("select category_feature_count.Category, category_feature_count.count as total_feature_count,
+b.owner_project from category_feature_count, (select distinct owner_project from each_project_category_count)b")
+owner_project_category$count = 0
+owner_project_category$percentage_used = 0;
+
+each_project_category_count = rbind(each_project_category_count, owner_project_category)
+each_project_category_count = sqldf("select owner_project, Category, total_feature_count, max(percentage_used) as percentage_used 
+                                    from each_project_category_count group by owner_project, Category, total_feature_count")
+
+each_project_category_count$Category_with_count = sprintf("%s (%s)", each_project_category_count$Category, each_project_category_count$total_feature_count)
+
+
+medians_with_zero = aggregate(percentage_used ~  Category_with_count, each_project_category_count, median)
+ggplot(each_project_category_count, aes(x=reorder(Category_with_count, percentage_used, median), y=percentage_used)) + 
+  #geom_violin(trim = FALSE)+
+  geom_boxplot(width=0.8)+
+  coord_flip()+
+  #geom_violin()+
+  scale_y_continuous(trans = "log1p", breaks = c(0,1,5,10,25,50,100))+
+  theme_bw()+ 
+  theme(axis.text.x = element_text(size = 10))+
+  xlab("")+
+  ylab("% of options used by the projects")
+#+
+# geom_boxplot(width=0.5)
+
+# ggplot(feature_counts, aes(x=feature, y=percentage, width=0.75)) +
+#   geom_bar(stat='identity', fill="#08BAC4") +
+#   geom_text(aes(label = sprintf("%.1f%%", percentage)), size=3, hjust=-0.05)+
+#   coord_flip()+
+#   xlab("")+
+#   ylab("")+
+#   theme_test()+
+#   theme(axis.text=element_text(size=10),
+#         axis.title=element_text(size=10),
+#         axis.line=element_blank(),
+#         axis.text.x=element_blank(),
+#         axis.ticks.x=element_blank(),
+#         axis.title.x=element_blank())+
+#   ylim(c(0,19))
+
+###############features by projects#########
+
+features = as.data.frame(unique(compose_file_features$feature))
+colnames(features) = c('feature')
+
+projects = as.data.frame(unique(compose_file_features$owner_project))
+colnames(projects) = c('owner_project')
+
+project_with_features = sqldf("select * from projects, features")
+project_with_features$count = 0
+
+used_feature_by_projects = sqldf("select owner_project, feature, count(*) as count from compose_file_features group by owner_project, feature")
+
+used_feature_by_projects = rbind(used_feature_by_projects[, c('owner_project','feature', 'count')], project_with_features)
+used_feature_by_projects= sqldf("select owner_project, feature, max(count) as count from used_feature_by_projects group by owner_project, feature")
+
+used_feature_by_projects = sqldf("select * from used_feature_by_projects where feature in (select distinct feature from feature_counts_by_project)")
+
+used_feature_by_projects_images = used_feature_by_projects[used_feature_by_projects$feature == "image",]
+# summary(used_feature_by_projects_images$count)
+# 
+# print("% of projects using image feature:")
+# print((length(unique(used_feature_by_projects_images$owner_project))/length(unique(used_feature_by_projects$owner_project))*100))
+# 
+# 
+# used_feature_by_projects_volumes = used_feature_by_projects[used_feature_by_projects$feature == "volumes",]
+# 
+# 
+# print("% of projects using volumes feature:")
+# print((length(unique(used_feature_by_projects_volumes$owner_project))/length(unique(used_feature_by_projects$owner_project))*100))
+# 
+# summary(used_feature_by_projects_volumes$count)
+# 
+# image_and_volume_feature_count = rbind(used_feature_by_projects_images, used_feature_by_projects_volumes)
+
+dodge <- position_dodge(width = 0.4)
+
+ggplot(data = used_feature_by_projects, aes(x=reorder(feature, count, quantile,prob=0.75), y = count)) +
+  #geom_violin(position = dodge)+
+  geom_boxplot(width=.7)+
+  scale_y_continuous(trans = "log1p", breaks = c(0,1,2,3,5,10,20,40, 75))+
+  xlab("")+
+  ylab("Frequency")+
+  theme_bw()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10))+
+  coord_flip()
+
+########## feature co-occurance ####################
+
+compose_file_selected_features = sqldf("select * from compose_file_features where feature in (select distinct feature from used_feature_by_projects)")
+feature_co_occurance = sqldf("select owner_project, parent, group_concat(feature) as features from compose_file_selected_features group by owner_project, parent")
+features =  as.data.frame(unique(compose_file_selected_features$feature))
+colnames(features) = c('feature')
+features$feature = as.character(features$feature)
+
+feature_support = data.frame(feature1 = character(), feature2 = character(), support = numeric(),
+                             feature1_support = numeric(), feature2_support = numeric(), 
+                             not_feature1_support = numeric(), not_feature2_support = numeric(), 
+                             feature1_not_feature2_support = numeric(), feature2_not_feature1_support = numeric())
+
+for(i in 1:nrow(features)){
+  for(j in 1:nrow(features)){
+    feature1 = features[i, c('feature')]
+    feature2 = features[j, c('feature')]
+    
+    feature1_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature2_support = nrow(feature_co_occurance[grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    not_feature1_support = nrow(feature_co_occurance[!grepl(feature1,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    not_feature2_support = nrow(feature_co_occurance[!grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    feature_1_and_2_co_occur_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features) & grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature_1_but_not_feature2_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features) & !grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature_2_but_not_feature1_support = nrow(feature_co_occurance[!grepl(feature1,feature_co_occurance$features) & grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    feature_support = rbind(feature_support, data.frame(feature1 = feature1, feature2 = feature2,
+                                                        feature1_support = feature1_support, feature2_support = feature2_support,
+                                                        not_feature1_support = not_feature1_support, not_feature2_support = not_feature2_support,
+                                                        co_occur_support = feature_1_and_2_co_occur_support,
+                                                        feature1_not_feature2_support = feature_1_but_not_feature2_support, 
+                                                        feature2_not_feature1_support = feature_2_but_not_feature1_support))
+  }
+}
+
+
+feature_support$conf_f1_to_f2 = feature_support$co_occur_support/feature_support$feature1_support
+#feature_support$conf_f2_to_f1 = feature_support$co_occur_support/feature_support$feature2_support
+
+
+# feature_support$conv_f1_to_f2 = feature_support$feature1_support*feature_support$not_feature2_support/feature_support$feature1_not_feature2_support
+# feature_support[!is.finite(feature_support$conv_f1_to_f2), c('conv_f1_to_f2')] = 0 
+#feature_support$conv_f2_to_f1 = feature_support$feature2_support*feature_support$not_feature1_support/feature_support$feature2_not_feature1_support
+
+ggplot(data = feature_support, aes(x=feature1, y=feature2, fill=conf_f1_to_f2)) + 
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(0,1), space = "Lab",
+                       name="Confidence" ) +
+  geom_text(aes(label = sprintf("%.1f",conf_f1_to_f2)), size = 3) +
+  theme_test()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1), axis.text.y = element_text(size=10),
+        legend.title=element_text(size=10), legend.text = element_text(size=8))+
+  xlab("")+
+  ylab("")
+
+# ggplot(data = feature_support, aes(x=feature1, y=feature2, fill=conv_f1_to_f2)) + 
+#   geom_tile(color = "white")+
+#   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+#                        midpoint = 0, limit = c(0,2), space = "Lab",
+#                        name="Conviction" ) +
+#   geom_text(aes(label = sprintf("%.1f",conv_f1_to_f2)), size = 3) +
+#   theme_test()+ 
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+#                                    size = 10, hjust = 1), legend.title=element_text(size=10), legend.text = element_text(size=8))+
+#   xlab("")+
+#   ylab("")
+
+########## feature category co-occurance ####################
+
+category_co_occurance = sqldf("select owner_project, parent, group_concat(distinct category) as categories from compose_file_actual_features group by owner_project, parent")
+categories =  as.data.frame(unique(compose_file_actual_features$Category))
+colnames(categories) = c('categories')
+categories$categories = as.character(categories$categories)
+
+category_support = data.frame(category1 = character(), category2 = character(), co_occur_support = numeric(),
+                              category1_support = numeric(), category2_support = numeric(), 
+                              not_category1_support = numeric(), not_category2_support = numeric(), 
+                              category1_not_category2_support = numeric(), category2_not_category1_support = numeric())
+
+for(i in 1:nrow(categories)){
+  for(j in 1:nrow(categories)){
+    category1 = categories[i, c('categories')]
+    category2 = categories[j, c('categories')]
+    
+    category1_support = nrow(category_co_occurance[grepl(category1,category_co_occurance$categories),])/nrow(category_co_occurance)
+    category2_support = nrow(category_co_occurance[grepl(category2,category_co_occurance$categories),])/nrow(category_co_occurance)
+    
+    not_category1_support = nrow(category_co_occurance[!grepl(category1,category_co_occurance$categories),])/nrow(category_co_occurance)
+    not_category2_support = nrow(category_co_occurance[!grepl(category2,category_co_occurance$categories),])/nrow(category_co_occurance)
+    
+    category_1_and_2_co_occur_support = nrow(category_co_occurance[grepl(category1,category_co_occurance$categories) & grepl(category2,category_co_occurance$categories),])/nrow(category_co_occurance)
+    category_1_but_not_category2_support = nrow(category_co_occurance[grepl(category1,category_co_occurance$categories) & !grepl(category2,category_co_occurance$categories),])/nrow(category_co_occurance)
+    category_2_but_not_category1_support = nrow(category_co_occurance[!grepl(category1,category_co_occurance$categories) & grepl(category2,category_co_occurance$categories),])/nrow(category_co_occurance)
+    
+    category_support = rbind(category_support, data.frame(category1 = category1, category2 = category2,
+                                                          category1_support = category1_support, category2_support = category2_support,
+                                                          not_category1_support = not_category1_support, not_category2_support = not_category2_support,
+                                                          co_occur_support = category_1_and_2_co_occur_support,
+                                                          category1_not_category2_support = category_1_but_not_category2_support, 
+                                                          category2_not_category1_support = category_2_but_not_category1_support))
+  }
+}
+
+
+category_support$conf_f1_to_f2 = category_support$co_occur_support/category_support$category1_support
+#category_support$conf_f2_to_f1 = category_support$co_occur_support/category_support$category2_support
+
+
+# category_support$conv_f1_to_f2 = category_support$category1_support*category_support$not_category2_support/category_support$category1_not_category2_support
+# category_support[!is.finite(category_support$conv_f1_to_f2), c('conv_f1_to_f2')] = 0 
+#category_support$conv_f2_to_f1 = category_support$category2_support*category_support$not_category1_support/category_support$category2_not_category1_support
+
+ggplot(data = category_support, aes(x=category1, y=category2, fill=conf_f1_to_f2)) + 
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(0,1), space = "Lab",
+                       name="Confidence" ) +
+  geom_text(aes(label = sprintf("%.1f",conf_f1_to_f2)), size = 3) +
+  theme_test()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1), axis.text.y = element_text(size=10),
+        legend.title=element_text(size=10), legend.text = element_text(size=8))+
+  xlab("")+
+  ylab("")
+
+
+
+#write.csv(feature_support, "~/docker-compose-script/data/co_occurance_of_compose_features.csv", row.names=FALSE)
+
+#####################correlation analysis of the features#################
+feature_column_count_by_project = cast(used_feature_by_projects, owner_project~feature, mean)
+feature_column_count_by_project$owner_project = NULL
+
+cor_result = data.frame(feature1= character(), feature2 = character(), cor_coefficient = numeric())
+
+for(i in 1:ncol(feature_column_count_by_project)){
+  for(j in i:ncol(feature_column_count_by_project)){
+    feature1 = colnames(feature_column_count_by_project)[i]
+    feature2 = colnames(feature_column_count_by_project)[j]
+    
+    cor_coefficient = cor.test(feature_column_count_by_project[, i], feature_column_count_by_project[, j], method = c('spearman'))$estimate
+    
+    cor_result = rbind(cor_result, data.frame(feature1 = feature1, feature2 = feature2, cor_coefficient = round(cor_coefficient, 1)))
+  }
+}
+
+ggplot(data = cor_result, aes(x=feature1, y=feature2, fill=cor_coefficient)) + 
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab",
+                       name="Spearman's \ncorrelation \ncoefficient") +
+  geom_text(aes(label = cor_coefficient), size = 3) +
+  theme_test()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1))+
+  coord_flip()+
+  xlab("")+
+  ylab("")
+
+
+
+
+# cor_result = cast(cor_result, feature1~feature2, mean)
+# rownames(cor_result) = cor_result$feature1
+# cor_result$feature1 = NULL
+
+
+########project do not use image feature##############
+# 
+# projects_not_having_image_feature = sqldf("select * from used_feature_by_projects where owner_project not in (select distinct owner_project from used_feature_by_projects_images)")
+# projects_having_build_feature = length(projects_not_having_image_feature[projects_not_having_image_feature$feature == 'build',]$owner_project)
+# 
+# print("% of projects using only built feature, not using image:")
+# print((projects_having_build_feature/length(unique(used_feature_by_projects$owner_project))*100))
+
+
+################ maually and automatically built image analysis
+images_features = compose_file_features[as.character(compose_file_features$feature) == 'image' | as.character(compose_file_features$feature) == 'build',]
+
+images_by_project_service = sqldf("select owner_project, parent, group_concat(feature) as features from images_features group by owner_project, parent")
+
+images_by_project_service$is_manually_built = "0"
+images_by_project_service[grep('build', images_by_project_service$features), c('is_manually_built')] = "1"
+
+project_images = sqldf("select owner_project, group_concat(is_manually_built) as manual_build_score from images_by_project_service group by owner_project")
+
+projects_having_only_manual_built_image = project_images[!grepl("0", project_images$manual_build_score),]
+projects_having_only_registry_image = project_images[!grepl("1", project_images$manual_build_score),]
+projects_having_both = project_images[grepl("1", project_images$manual_build_score) & grepl("0", project_images$manual_build_score),]
+
+print(sprintf("%% of projects having just manually built images: %.2f%%", (nrow(projects_having_only_manual_built_image)/nrow(project_images)*100)))
+print(sprintf("%% of projects having just registry images: %.2f%%", (nrow(projects_having_only_registry_image)/nrow(project_images)*100)))
+print(sprintf("%% of projects having both manual and egistry images: %.2f%%", (nrow(projects_having_both)/nrow(project_images)*100)))
+
+summary(str_count(projects_having_only_manual_built_image$manual_build_score, "1"))
+summary(str_count(projects_having_only_registry_image$manual_build_score, "0"))
+summary((str_count(projects_having_both$manual_build_score, ",")+1))
+
+
+############### how many projects used port but not image ##############
+
+features_by_project_service = sqldf("select owner_project, parent, group_concat(feature) as features from compose_file_features group by owner_project, parent")
+
+#features_by_project_service_without_port = 

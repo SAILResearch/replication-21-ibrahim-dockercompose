@@ -1,0 +1,164 @@
+library(sqldf)
+
+compose_file_images = read.csv(file = "~/docker-compose/data/compose_images.csv", header =
+                              TRUE, sep = ",")
+
+compose_file_images$owner_project = paste(compose_file_images$owner_id, compose_file_images$project_name, sep="/")
+
+image_per_project = sqldf("select owner_project, count(*) as image_count from compose_file_images group by owner_project")
+summary(image_per_project$image_count)
+print("% of monolithic system:")
+print(nrow(image_per_project[image_per_project$image_count == 1,])/nrow(image_per_project)*100)
+
+print("% of distributed systems")
+print(nrow(image_per_project[image_per_project$image_count > 1,])/nrow(image_per_project)*100)
+
+
+#########################
+custom_build_images = compose_file_images[!is.na(compose_file_images$custom_build),]
+
+registry_images = compose_file_images[is.na(compose_file_images$custom_build),]
+
+
+percentage_of_images_used_from_registry = nrow(registry_images)/nrow(compose_file_images)*100
+
+registry_images_used_from_argument = registry_images[grepl("\\$\\{", registry_images$image), ]
+
+print("percentage of images that are dynamic:")
+print((nrow(registry_images_used_from_argument)/nrow(registry_images)*100))
+
+registry_images_used_with_real_name = registry_images[!grepl("\\$\\{", registry_images$image), ]
+
+print("percentage of images that are static:")
+print((nrow(registry_images_used_with_real_name)/nrow(registry_images)*100))
+
+
+docker_hub_images1 = registry_images_used_with_real_name[grepl("index.docker.io", registry_images_used_with_real_name$image) 
+                                                         | grepl("docker.io", registry_images_used_with_real_name$image), ]
+
+
+potential_images_from_other_registry = registry_images_used_with_real_name[!grepl("index.docker.io", registry_images_used_with_real_name$image) 
+                                                                           & !grepl("docker.io", registry_images_used_with_real_name$image), ]
+
+docker_hub_images2 = potential_images_from_other_registry[!grepl("\\.", potential_images_from_other_registry$image) & lengths(regmatches(potential_images_from_other_registry$image, gregexpr("/", potential_images_from_other_registry$image))) < 2, ]
+
+images_from_other_registry = potential_images_from_other_registry[grepl("\\.", potential_images_from_other_registry$image) | lengths(regmatches(potential_images_from_other_registry$image, gregexpr("/", potential_images_from_other_registry$image))) > 1, ]
+
+docker_hub_images = rbind(docker_hub_images1, docker_hub_images2)
+
+
+percentage_of_images_from_docker_hub = nrow(docker_hub_images)/nrow(registry_images_used_with_real_name)*100
+
+
+official_image = docker_hub_images[ !grepl("/", docker_hub_images$image) | grepl("library/", docker_hub_images$image), ]
+
+percentage_of_official_image = nrow(official_image)/nrow(docker_hub_images)*100
+
+
+#############combination of images###############
+
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+registry_images_used_with_real_name$developer = ""
+registry_images_used_with_real_name$developer_provided_name = ""
+
+print(nrow(registry_images_used_with_real_name))
+
+for(row in 1:nrow(registry_images_used_with_real_name)){
+  print(row)
+  image_name_split = unlist(strsplit(trim(as.character(registry_images_used_with_real_name[row, "image"])), "/"))
+  image_developer = image_name_split[1]
+  image_name = image_name_split[2]
+  
+  if (is.na(image_name)) {
+    image_name = image_developer
+    image_developer = "library"
+  }
+  
+  registry_images_used_with_real_name[row, "developer"] = image_developer
+  registry_images_used_with_real_name[row, "developer_provided_name"] = image_name
+}
+
+registry_images_used_with_real_name = registry_images_used_with_real_name[order(registry_images_used_with_real_name$developer_provided_name),]
+
+#group all compose images by project
+compose_project_image_combinations_stat = sqldf("select owner_id, project_name, 
+      group_concat(distinct developer_provided_name) as image_combination, count(distinct developer_provided_name) as image_count
+      from registry_images_used_with_real_name
+      group by owner_id, project_name")
+
+summary(compose_project_image_combinations_stat$image_count)
+
+
+compose_project_image_combinations = sqldf("select owner_id, project_name, 
+      group_concat(distinct developer_provided_name) as image_combination, count(distinct developer_provided_name) as image_count
+      from registry_images_used_with_real_name
+      group by owner_id, project_name having image_count > 1")
+
+
+popular_image_combinations = sqldf("select image_combination, count(*) as count from compose_file_image_combinations 
+                                    group by image_combination")
+
+total_no_of_projects_having_more_than_one_image = nrow(compose_project_image_combinations)
+
+popular_image_combinations$percentage = round(popular_image_combinations$count/total_no_of_projects_having_more_than_one_image*100, 2)
+
+popular_image_combinations$image_combination = as.character(popular_image_combinations$image_combination)
+popular_image_combinations = popular_image_combinations[popular_image_combinations$percentage >= 0.56,] 
+
+#others = sum(popular_image_combinations[popular_image_combinations$image_combination == "Other",]$percentage)
+
+#popular_image_combinations = popular_image_combinations[popular_image_combinations$image_combination != "Other",]
+#popular_image_combinations$count = NULL
+
+popular_image_combinations = popular_image_combinations[order(popular_image_combinations$percentage, decreasing = FALSE),]
+
+#popular_image_combinations = rbind(data.frame(image_combination="Others", percentage=others), popular_image_combinations)
+
+popular_image_combinations$image_combination = paste("(", popular_image_combinations$image_combination, ")", sep = "")
+popular_image_combinations$image_combination = factor(popular_image_combinations$image_combination, level = popular_image_combinations$image_combination)
+
+ 
+levels(popular_image_combinations$image_combination) <- gsub(",", "\n", levels(popular_image_combinations$image_combination))
+
+ggplot(popular_image_combinations, aes(x=image_combination, y=percentage, width=0.75,)) +
+  geom_bar(stat='identity', fill="#08BAC4") +
+  geom_text(aes(label = sprintf("%.2f%%", percentage)), size=3, hjust=1.05, color="white", fontface='bold')+
+  coord_flip()+
+  xlab("")+
+  ylab("Frequency (%)")+
+  theme_test()+
+  theme(axis.text=element_text(size=8),
+        axis.title=element_text(size=9))
+
+################images frequency##################
+used_images_freq = sqldf("select developer_provided_name, count(*) as count from registry_images_used_with_real_name group by developer_provided_name")
+
+used_images_freq$percentage = round(used_images_freq$count/sum(used_images_freq$count)*100, 2)
+
+used_images_freq$developer_provided_name = as.character(used_images_freq$developer_provided_name)
+used_images_freq = used_images_freq[used_images_freq$percentage >= 0.65,]
+#used_images_freq$developer_provided_name[used_images_freq$percentage < 0.5] = "Other" 
+
+#others = sum(used_images_freq[used_images_freq$developer_provided_name == "Other",]$percentage)
+
+#used_images_freq = used_images_freq[used_images_freq$developer_provided_name != "Other",]
+#used_images_freq$count = NULL
+
+used_images_freq = used_images_freq[order(used_images_freq$percentage, decreasing = FALSE),]
+
+#used_images_freq = rbind(data.frame(developer_provided_name="Others", percentage=others), used_images_freq)
+
+
+used_images_freq$developer_provided_name = factor(used_images_freq$developer_provided_name, level = used_images_freq$developer_provided_name)
+
+ggplot(used_images_freq, aes(x=developer_provided_name, y=percentage, width=0.75,)) +
+  geom_bar(stat='identity', fill="#08BAC4") +
+  geom_text(aes(label = sprintf("%.2f%%", percentage)), size=3, hjust=1.05, color="white", fontface='bold')+
+  coord_flip()+
+  xlab("")+
+  ylab("Frequency (%)")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10))
+

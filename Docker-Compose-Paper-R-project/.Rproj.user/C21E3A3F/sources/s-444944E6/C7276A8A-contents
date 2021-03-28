@@ -1,0 +1,81 @@
+# Normal distribution
+
+y<-100*rbeta(1000, 5, 5)
+
+h<-hist(y, breaks=10, col="red",
+        main="Histogram")
+xfit<-seq(min(y),max(y),length=40)
+yfit<-dnorm(xfit,mean=mean(y),sd=sd(y))
+yfit <- yfit*diff(h$mids[1:2])*length(y)
+lines(xfit, yfit, col="blue", lwd=2)
+
+median(y)+3*sd(y)
+y[1001]<-500
+boxplot(y)
+
+# Negative skew
+
+y<-100*rbeta(1000,2,10)
+
+h<-hist(y, breaks=10, col="red",
+        main="Histogram")
+xfit<-seq(min(y),max(y),length=40)
+yfit<-dnorm(xfit,mean=mean(y),sd=sd(y))
+yfit <- yfit*diff(h$mids[1:2])*length(y)
+lines(xfit, yfit, col="blue", lwd=2)
+
+median(y)-3*sd(y)
+
+
+min(y)
+
+y[1001]<--0.1
+
+boxplot(y)
+
+# Postive skew
+
+y<-100*rbeta(1000,10,2)
+
+h<-hist(y, breaks=10, col="red",
+        main="Histogram")
+xfit<-seq(min(y),max(y),length=40)
+yfit<-dnorm(xfit,mean=mean(y),sd=sd(y))
+yfit <- yfit*diff(h$mids[1:2])*length(y)
+lines(xfit, yfit, col="blue", lwd=2)
+
+
+median(y)-3*sd(y)
+
+max(y)
+y[1001]<-104
+
+boxplot(y)
+
+
+
+# statistical tests
+
+A <- c(117.1, 121.3, 127.8, 121.9, 117.4, 124.5, 119.5, 115.1)
+B <- c(123.5, 125.3, 126.5, 127.9, 122.1, 125.6, 129.8, 117.2)
+dat <- data.frame(weight = c(A,B), 
+                  company = rep(c("A","B"), each=8))
+boxplot(weight ~ company, data = dat)
+wilcox.test(A,B)
+
+
+x <- c(1,2,2,3,3,3,3,4,5,6)
+y <- c(1,3,2,4,3,3.5,2,4,6,6)
+z <- c(12,13,14,15,15,16,16,16,16,17)
+
+
+plot(0,0,xlim = c(0,10),ylim = c(0,20),type = "n")
+lines(x, type="l", col="green")
+lines(y, col="blue", type ="l")
+lines(z, col="red", type ="l")
+
+ks.test(x,y)
+ks.test(x,z)
+
+
+

@@ -1,0 +1,2 @@
+build,dockerfile,cap_add, cap_drop, command, cgroup_parent, container_name, devices, dns, dns_search, entrypoint, env_file, environment, expose, extends, external_links, extra_hosts, image, labels, links, log_driver, log_opt, net, pid, ports, security_opt, stop_signal, ulimits, volumes, volume_driver, volumes_from, cpu_shares, cpu_quota, cpuset, domainname, hostname, ipc, mac_address, mem_limit, memswap_limit, mem_swappiness, privileged, read_only, restart, shm_size, stdin_open, tty, user, working_dir
+

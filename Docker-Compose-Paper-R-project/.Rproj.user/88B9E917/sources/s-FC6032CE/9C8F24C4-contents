@@ -1,0 +1,90 @@
+
+library(dplyr)
+library(reshape)
+require(Ckmeans.1d.dp)
+
+collectThresholds = function (commitAuthorFile, Dates, output) {
+  
+  authorCommits<-read.csv(commitAuthorFile)
+  commitsDates<-read.csv(Dates)
+  
+  data<-merge(authorCommits, commitsDates, by="commit")
+  # Read data file
+  #data <- read.csv("rust.csv", header=TRUE, sep=",")
+  
+  result<-data.frame()
+  # foreach date X
+  for(d in unique(format(as.Date(unique(data$date)), "%Y-%m-01"))) {
+    print(d)
+    # select all data up to X
+    priorData<-data[which(as.Date(data$date) < as.Date(d)),]
+  
+    # group data by authors to count how many commits everybody has
+    nbre<-priorData %>%
+      group_by(user) %>% 
+      summarize(commitCount = length(unique(commit)))
+    
+    # select a threshold for X
+    breaks<-Ckmeans.1d.dp(as.numeric(nbre$commitCount), k = 3)
+    fr<-data.frame(nbre, experience=breaks$cluster-1)
+    
+    x<-fr %>% 
+      group_by(experience) %>%
+      summarize(min=min(commitCount), max=max(commitCount))
+    
+    x$time<-d
+    result<-rbind(result, x)
+  }
+  
+  result<-result[order(result$time),]
+  
+  write.csv(result, output, row.names = FALSE)
+}
+
+collectThresholds("Reaction_dataset/commits_authors/Cataclysm-DDA_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/Cataclysm-DDA_dates.csv"
+                  , "Reaction_dataset/thresholds/Cataclysm-DDA_thresholds.csv")
+
+collectThresholds("Reaction_dataset/commits_authors/julia_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/julia_dates.csv"
+                  , "Reaction_dataset/thresholds/julia_thresholds.csv")
+
+collectThresholds("Reaction_dataset/commits_authors/laravel_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/laravel_dates.csv"
+                  , "Reaction_dataset/thresholds/laravel_thresholds.csv")
+
+collectThresholds("Reaction_dataset/commits_authors/node_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/node_dates.csv"
+                  , "Reaction_dataset/thresholds/node_thresholds.csv")
+
+collectThresholds("Reaction_dataset/commits_authors/rpcs3_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/rpcs3_dates.csv"
+                  , "Reaction_dataset/thresholds/rpcs3_thresholds.csv")
+
+collectThresholds("Reaction_dataset/commits_authors/rust_commitauthor_merged.csv"
+                  , "Reaction_dataset/commits_dates/rust_dates.csv"
+                  , "Reaction_dataset/thresholds/rust_thresholds.csv")
+
+
+
+
+
+
+
+
+
+
+
+qplot(data=result, as.Date(time), group=experience, y =min, geom="line")
+
+
+# Author names vs author emails
+data<-read.csv("authornamemail.csv")
+
+c<-data %>% 
+  group_by(mail) %>%
+  summarize(c=length(unique(name)))
+
+c<-data %>% 
+  group_by(name) %>%
+  summarize(c=length(unique(mail)))

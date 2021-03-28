@@ -1,0 +1,116 @@
+Feature,Category
+build,Image Config
+dockerfile,Image Config
+cap_add,Security
+cap_drop,Security
+command,Utility
+cgroup_parent,Security
+container_name,Image Config
+devices,Accessibility
+dns,Network Config
+dns_search,Network Config
+entrypoint,Utility
+env_file,System Config
+environment,System Config
+expose,Accessibility
+extends,Components Relation
+external_links,Accessibility
+extra_hosts,Accessibility
+image,Image Config
+labels,Utility
+links,Accessibility
+log_driver,Logging
+log_opt,Logging
+net,Network Config
+pid,Process Spec
+ports,Accessibility
+security_opt,Security
+stop_signal,Process Spec
+ulimits,Resource Management
+volumes,Data Management
+volume_driver,Data Management
+volumes_from,Data Management
+cpu_shares,Resource Management
+cpu_quota,Resource Management
+cpuset,Resource Management
+domainname,Network Config
+hostname,Accessibility
+ipc,Accessibility
+mac_address,Network Config
+mem_limit,Resource Management
+memswap_limit,Resource Management
+mem_swappiness,Resource Management
+privileged,Process Spec
+read_only,Accessibility
+restart,Process Spec
+shm_size,Resource Management
+stdin_open,Utility
+tty,Utility
+user,Security
+working_dir,Utility
+blkio_config,Resource Management
+device_read_bps,Resource Management
+device_write_bps,Resource Management
+device_read_iops,Resource Management
+device_write_iops,Resource Management
+weight,Resource Management
+weight_device,Resource Management
+cache_from,Resource Management
+context,Image Config
+args,Image Config
+isolation,Security
+network,Network Config
+target,Image Config
+cpu_rt_runtime,Resource Management
+cpu_rt_period,Resource Management
+device_cgroup_rules,Security
+depends_on,Process Spec
+dns_opt,Network Config
+tmpfs,Data Management
+group_add,Security
+healthcheck,Utility
+init,Process Spec
+logging,Logging
+network_mode,Network Config
+networks,Network Config
+aliases,Accessibility
+ipv4_address,Network Config
+ipv6_address,Network Config
+link_local_ips,Network Config
+priority,Process Spec
+pids_limit,Process Spec
+platform,System Config
+runtime,System Config
+scale,Resource Management
+stop_grace_period,Process Spec
+storage_opt,Data Management
+sysctls,System Config
+userns_mode,Security
+cpu_count,Resource Management
+cpu_percent,Resource Management
+cpu_period,Resource Management
+cpus,Resource Management
+mem_reservation,Resource Management
+oom_kill_disable,Process Spec
+oom_score_adj,Process Spec
+driver,Data Management
+driver_opts,Data Management
+external,Data Management
+name,Data Management
+enable_ipv6,Network Config
+ipam,Network Config
+internal,Accessibility
+credential_spec,Security
+deploy,Utility
+endpoint_mode,Accessibility
+mode,Utility
+placement,Component Management
+replicas,Component Management
+resources,Resource Management
+restart_policy,Process Spec
+rollback_config,Process Spec
+update_config,Process Spec
+secrets,Security
+bridge,Network Config
+overlay,Network Config
+attachable,Network Config

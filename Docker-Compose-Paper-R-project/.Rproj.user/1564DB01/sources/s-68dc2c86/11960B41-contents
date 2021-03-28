@@ -1,0 +1,264 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here, sqldf, ggplot2)
+
+# Over a quarter (26.8%) of the studied applications needlessly use Docker Compose to compose single-component applications, 
+# even though the primary goal of Docker Compose is to compose multi-component applications
+
+compose_file_images = read.csv(here("rqs/data","compose_images.csv"), header = TRUE, sep = ",")
+compose_file_images$project_name = trimws(compose_file_images$project_name)
+compose_file_images$custom_build = trimws(compose_file_images$custom_build)
+
+compose_file_features = read.csv(here("rqs/data","compose_features.csv"), header =
+                                   TRUE, sep = ",")
+compose_file_features$project_name = trimws(compose_file_features$project_name)
+
+#hack
+compose_file_features[compose_file_features$version == 'n', c("version")] = ""
+
+
+commit_count_by_project = read.csv(here("rqs/data","compose_project_commit_contributor_count.csv"), header = TRUE, sep = ",")
+
+commit_count_by_project$owner_project = paste(commit_count_by_project$owner_id, commit_count_by_project$name, sep = "/")
+compose_file_features$owner_project = paste(compose_file_features$owner_id, compose_file_features$project_name, sep = "/")
+
+compose_file_images$owner_project = paste(compose_file_images$owner_id, compose_file_images$project_name, sep="/")
+
+
+image_per_project = sqldf("select owner_project, count(*) as image_count from compose_file_images group by owner_project")
+summary(image_per_project$image_count)
+
+
+monolithic_systems = image_per_project[image_per_project$image_count == 1,]
+
+print("% of projects that build single-component application:")
+print(nrow(monolithic_systems)/nrow(image_per_project)*100)
+
+
+image_count_vs_commit_count = sqldf("select image_per_project.*, commit_count_by_project.commit_count from image_per_project 
+                                    inner join commit_count_by_project on image_per_project.owner_project = commit_count_by_project.owner_project")
+
+
+project_count_by_image_count = sqldf("select image_count, count(*) as project_count from image_count_vs_commit_count group by image_count")
+
+
+ggplot(project_count_by_image_count, aes(x=reorder(image_count, image_count), y=project_count))+
+  geom_bar(stat = "identity", width = 0.5)+
+  theme_bw()+
+  scale_y_continuous(trans = "log1p", breaks = c(1, 5, 25, 100, 200, 500, 1000, 1500))+
+  theme(axis.text.x = element_text(angle = 90))+
+  xlab("# of components")+
+  ylab("# of projects")
+
+
+
+# 65% of the single-component applications use Docker Compose to specify the mapping of the virtual storage in a component to an actual physical location on the host machine 
+
+monolithic_project_used_features = sqldf("select * from compose_file_features where owner_project in (select owner_project from monolithic_systems)")
+monolithic_projects_using_volumes = monolithic_project_used_features[grepl("volumes", monolithic_project_used_features$feature),]
+
+print("% of single-component projects using volumes:")
+print(length(unique(monolithic_projects_using_volumes$owner_project))/length(unique(monolithic_project_used_features$owner_project))*100)
+
+
+############# number of reused images #############
+
+custom_build_images = compose_file_images[compose_file_images$custom_build == 1,]
+
+registry_images = compose_file_images[compose_file_images$custom_build == "",]
+
+
+registry_image_projects = sqldf("select * from compose_file_images where owner_project in (select distinct owner_project from registry_images) and owner_project 
+                                           not in (select distinct owner_project from custom_build_images)")
+
+
+duplicate_image_count_by_project = sqldf("select owner_project, image_with_tag, count(*) as image_count from registry_image_projects group by owner_project, image_with_tag")
+
+duplicate_image_count_by_project$duplicate_image_count = duplicate_image_count_by_project$image_count -1
+
+duplicate_image_count_by_project = sqldf("select owner_project, sum(duplicate_image_count) as total_duplicate_images, sum(image_count) as total_service 
+                                         from duplicate_image_count_by_project group by owner_project")
+
+print("% of images having atleast one duplicate image:")
+print(nrow(duplicate_image_count_by_project[duplicate_image_count_by_project$total_duplicate_images > 0,])/nrow(duplicate_image_count_by_project)*100)
+
+summary(duplicate_image_count_by_project$total_duplicate_images)
+
+
+# Multi-component applications leverage components that are built from local Docker images as well as registry-hosted (mostly DockerHub) images
+
+projects_using_only_registry_images = sqldf("select * from compose_file_images where owner_project in (select distinct owner_project from registry_images) and owner_project 
+                                           not in (select distinct owner_project from custom_build_images)")
+
+projects_using_only_custom_built_images = sqldf("select * from compose_file_images where owner_project not in (select distinct owner_project from registry_images) and owner_project 
+                                           in (select distinct owner_project from custom_build_images)")
+
+projects_using_both_types_of_images = sqldf("select * from compose_file_images where owner_project in (select distinct owner_project from registry_images) and owner_project 
+                                           in (select distinct owner_project from custom_build_images)")
+
+
+print("% of projects using only local image:")
+print(length(unique(projects_using_only_custom_built_images$owner_project))/length(unique(compose_file_images$owner_project))*100)
+
+print("% of projects using only registry image:")
+print(length(unique(projects_using_only_registry_images$owner_project))/length(unique(compose_file_images$owner_project))*100)
+
+print("% of projects using a combination of local and registry image:")
+print(length(unique(projects_using_both_types_of_images$owner_project))/length(unique(compose_file_images$owner_project))*100)
+
+
+# DockerHub is the most used online registry for remote images
+
+percentage_of_images_used_from_registry = nrow(registry_images)/nrow(compose_file_images)*100
+
+registry_images_used_from_argument = registry_images[grepl("\\$\\{", registry_images$image), ]
+
+print("percentage of images that are dynamic:")
+print((nrow(registry_images_used_from_argument)/nrow(registry_images)*100))
+
+registry_images_used_with_real_name = registry_images[!grepl("\\$\\{", registry_images$image), ]
+
+print("percentage of images that are static:")
+print((nrow(registry_images_used_with_real_name)/nrow(registry_images)*100))
+
+
+docker_hub_images1 = registry_images_used_with_real_name[grepl("index.docker.io", registry_images_used_with_real_name$image) 
+                                                         | grepl("docker.io", registry_images_used_with_real_name$image), ]
+
+
+potential_images_from_other_registry = registry_images_used_with_real_name[!grepl("index.docker.io", registry_images_used_with_real_name$image) 
+                                                                           & !grepl("docker.io", registry_images_used_with_real_name$image), ]
+
+docker_hub_images2 = potential_images_from_other_registry[!grepl("\\.", potential_images_from_other_registry$image) & lengths(regmatches(potential_images_from_other_registry$image, gregexpr("/", potential_images_from_other_registry$image))) < 2, ]
+
+images_from_other_registry = potential_images_from_other_registry[grepl("\\.", potential_images_from_other_registry$image) | lengths(regmatches(potential_images_from_other_registry$image, gregexpr("/", potential_images_from_other_registry$image))) > 1, ]
+
+docker_hub_images = rbind(docker_hub_images1, docker_hub_images2)
+
+
+percentage_of_images_from_docker_hub = nrow(docker_hub_images)/nrow(registry_images_used_with_real_name)*100
+print("% of registry images from DockerHub:")
+print(percentage_of_images_from_docker_hub)
+
+official_image = docker_hub_images[ !grepl("/", docker_hub_images$image) | grepl("library/", docker_hub_images$image), ]
+
+percentage_of_official_image = nrow(official_image)/nrow(docker_hub_images)*100
+print("% of DockerHub images that are official:")
+print(percentage_of_official_image)
+
+
+# The most popular DockerHub images are related to infrastructure images
+
+
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+registry_images_used_with_real_name$developer = ""
+registry_images_used_with_real_name$developer_provided_name = ""
+
+print(nrow(registry_images_used_with_real_name))
+
+for(row in 1:nrow(registry_images_used_with_real_name)){
+  
+  image_name_split = unlist(strsplit(trim(as.character(registry_images_used_with_real_name[row, "image"])), "/"))
+  
+  if(length(image_name_split) > 1){
+    image_developer = image_name_split[length(image_name_split)-1]
+    image_name = image_name_split[length(image_name_split)]
+  }else{
+    image_name = image_name_split
+    image_developer = "library"
+  }
+  
+  registry_images_used_with_real_name[row, "developer"] = image_developer
+  registry_images_used_with_real_name[row, "developer_provided_name"] = image_name
+}
+
+registry_images_used_with_real_name = registry_images_used_with_real_name[order(registry_images_used_with_real_name$developer_provided_name),]
+
+#group all compose images by project
+compose_project_image_combinations_stat = sqldf("select owner_id, project_name, 
+      group_concat(distinct developer_provided_name) as image_combination, count(developer_provided_name) as image_count
+      from registry_images_used_with_real_name
+      group by owner_id, project_name")
+
+summary(compose_project_image_combinations_stat$image_count)
+
+
+compose_project_image_combinations = sqldf("select owner_id, project_name, 
+      group_concat(distinct developer_provided_name) as image_combination, count(distinct developer_provided_name) as image_count
+      from registry_images_used_with_real_name
+      group by owner_id, project_name having image_count > 1")
+
+
+popular_image_combinations = sqldf("select image_combination, count(*) as count from compose_project_image_combinations 
+                                    group by image_combination")
+
+total_no_of_projects_having_more_than_one_image = nrow(compose_project_image_combinations)
+
+popular_image_combinations$percentage = round(popular_image_combinations$count/total_no_of_projects_having_more_than_one_image*100, 2)
+
+popular_image_combinations$image_combination = as.character(popular_image_combinations$image_combination)
+popular_image_combinations = popular_image_combinations[order(-popular_image_combinations$count),]
+popular_image_combinations = popular_image_combinations[1:10,] 
+
+popular_image_combinations = popular_image_combinations[order(popular_image_combinations$percentage, decreasing = TRUE),]
+
+popular_image_combinations$image_combination = factor(popular_image_combinations$image_combination, level = popular_image_combinations$image_combination)
+
+
+levels(popular_image_combinations$image_combination) <- gsub(",", "\n", levels(popular_image_combinations$image_combination))
+
+
+ggplot(popular_image_combinations
+       , aes(image_combination, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(image_combination, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = image_combination, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects using online resgistry images")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,6.5))
+
+
+used_images_freq = sqldf("select developer_provided_name, count(distinct owner_project) as count from registry_images_used_with_real_name group by developer_provided_name")
+
+used_images_freq$percentage = round(used_images_freq$count/length(unique(registry_images_used_with_real_name$owner_project))*100, 2)
+
+used_images_freq$developer_provided_name = as.character(used_images_freq$developer_provided_name)
+
+used_images_freq = used_images_freq[order(-used_images_freq$percentage),]
+used_images_freq = used_images_freq[1:10,]
+
+
+used_images_freq = used_images_freq[order(used_images_freq$percentage, decreasing = FALSE),]
+
+
+
+used_images_freq$developer_provided_name = factor(used_images_freq$developer_provided_name, level = used_images_freq$developer_provided_name)
+
+ggplot(used_images_freq
+       , aes(developer_provided_name, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(developer_provided_name, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = developer_provided_name, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects using online registry images")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,26))
+
+

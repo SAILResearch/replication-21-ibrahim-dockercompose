@@ -1,0 +1,25 @@
+{
+    "id": "479CD499",
+    "path": "~/Research/replication-19-ibrahim-dockercompose/Docker-Compose-Paper-R-project/rqs/scripts/major_revision.R",
+    "project_path": "rqs/scripts/major_revision.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1612133711481.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "tempName": "Untitled1",
+        "cursorPosition": "31,33",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1612135204,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1612135204893,
+    "read_only": false,
+    "read_only_alternatives": []
+}

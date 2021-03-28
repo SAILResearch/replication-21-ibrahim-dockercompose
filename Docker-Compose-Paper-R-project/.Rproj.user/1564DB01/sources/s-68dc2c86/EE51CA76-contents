@@ -1,0 +1,52 @@
+library(sqldf)
+library(reshape)
+library(splitstackshape)
+library(stringr)
+
+compose_file_features = read.csv(file = "~/docker-compose-script/data/compose_features.csv", header =
+                                   TRUE, sep = ",")
+compose_file_features$owner_project = paste(compose_file_features$owner_id, compose_file_features$project_name, sep="/")
+compose_file_features$feature = trimws(compose_file_features$feature)
+
+
+compse_file_version1_features = read.csv(file = "~/docker-compose-script/data/features/version1.csv", header =
+                                          FALSE, sep = ",")
+
+compse_file_version1_features = as.data.frame(t(compse_file_version1_features))
+colnames(compse_file_version1_features) = c('feature')
+compse_file_version1_features$feature = trimws(compse_file_version1_features$feature)
+
+compse_file_version2_features = read.csv(file = "~/docker-compose-script/data/features/version2.csv", header =
+                                          FALSE, sep = ",")
+compse_file_version2_features = as.data.frame(t(compse_file_version2_features))
+colnames(compse_file_version2_features) = c('feature')
+compse_file_version2_features$feature = trimws(compse_file_version2_features$feature)
+
+compse_file_version3_features = read.csv(file = "~/docker-compose-script/data/features/version3.csv", header =
+                                          FALSE, sep = ",")
+compse_file_version3_features = as.data.frame(t(compse_file_version3_features))
+colnames(compse_file_version3_features) = c('feature')
+compse_file_version3_features$feature = trimws(compse_file_version3_features$feature)
+
+unique_features_in_all_versions = unique(rbind(compse_file_version1_features, compse_file_version2_features, compse_file_version3_features))
+
+
+feature_removed_in_version3 = as.data.frame(setdiff(compse_file_version2_features$feature, compse_file_version3_features$feature))
+colnames(feature_removed_in_version3) = c('missing_features')
+
+
+feature_added_in_version3 = as.data.frame(setdiff(compse_file_version3_features$feature, compse_file_version2_features$feature))
+colnames(feature_added_in_version3) = c('missing_features')
+
+options_that_are_not_used = as.data.frame(setdiff(unique_features_in_all_versions$feature, unique(compose_file_features$feature)))
+colnames(options_that_are_not_used) = c("unused_options")
+
+removed_unused_features = as.data.frame(intersect(options_that_are_not_used$unused_options, feature_removed_in_version3$missing_features))
+colnames(removed_unused_features) = c('unused_features_removed')
+
+
+compose_project_using_removed_features = compose_file_features[compose_file_features$feature %in% feature_removed_in_version3$missing_feature,]
+
+removed_feature_used_by_projects_count = sqldf("select feature, count(distinct owner_project) as project_count from compose_project_using_removed_features group by feature")
+summary(removed_feature_used_by_projects_count$project_count)
+

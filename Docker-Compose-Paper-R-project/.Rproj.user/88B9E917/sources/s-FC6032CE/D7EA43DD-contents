@@ -1,0 +1,1122 @@
+
+install.packages('rms')
+
+library(devtools)
+library(rms)
+library(Rnalytica)
+library(pROC)
+library(ROCR)
+library(ScottKnottESD)
+library(ggplot2)
+library(randomForest)
+library(stringr)
+library(sqldf)
+library(dplyr)
+library(boot)
+library(fastDummies)
+library(DescTools)
+
+library(car)
+library(caret)
+library(DMwR)
+library(ROSE)
+
+
+# Data preparation
+getData <- function(mail, SF, SO, SIM, DEP, SODIST,SFDIST, MAILDIST, DECL, CODE) {
+  #mail<-"final_data/apache/mailing_all.csv" 
+  #SF<-"final_data/apache/SF_all.csv"
+  #SO<-"final_data/apache/SO_all.csv"
+  #SIM<-"final_data/apache/nameSimilarity.csv"
+  #DEP<-"final_data/apache/englishDependencies.csv"
+  #SODIST<-"final_data/apache/occurences_no_code_SO_distances.csv"
+  #SFDIST<-"final_data/apache/occurences_no_code_SF_distances.csv"
+  #MAILDIST<-"final_data/apache/occurences_no_code_mailing_distances.csv"
+  #DECL<-"final_data/apache/declarationmetrics.csv"
+  #CODE<-"final_data/apache/codemetrics.csv"
+  
+  #mailing<-read.csv("final_data/cassandra/MAIL_cassandra_all.csv")
+  #mailing<-read.csv("final_data/apache/mail_all.csv")
+  mailing<-read.csv(mail)
+  for (i in 1:length(names(mailing))) {
+    mailing[,i] <- as.character(mailing[,i])
+  }
+  
+  mailing$A<-tolower(str_replace_all(mailing$A, "_", ""))
+  mailing$B<-tolower(str_replace_all(mailing$B, "_", ""))
+  mailing$A<-tolower(str_replace_all(mailing$A, "\\.", ""))
+  mailing$B<-tolower(str_replace_all(mailing$B, "\\.", ""))
+  #mailing$A<-tolower(str_replace_all(mailing$A, "2", ""))
+  #mailing$B<-tolower(str_replace_all(mailing$B, "2", ""))
+  
+  mailing$A<-trimws(mailing$A)
+  mailing$B<-trimws(mailing$B)
+  
+  mailing$order<-ifelse(mailing$A<mailing$B, 0, 1)
+  
+  tmp<-mailing[which(mailing$order==0),]
+  x<-mailing[which(mailing$order==1),]
+  x<-x[,c(2,1,4,3,6,5,7),]
+  names(x)<-names(tmp)
+  tmp<-rbind(tmp, x)
+  
+  mailing<-unique(tmp)
+  
+  names(mailing)[names(mailing) == "A..B"] <- "mailing_A..B"
+  names(mailing)[names(mailing) == "B..A"] <- "mailing_B..A"
+  names(mailing)[names(mailing) == "sumA"] <- "mailing_sumA"
+  names(mailing)[names(mailing) == "sumB"] <- "mailing_sumB"
+  
+  mailing$order<-NULL
+  
+  popularityMail<-data.frame(option = as.character(), occ = as.character())
+  popularityMail<-rbind(popularityMail,setNames(select(mailing, A, mailing_sumA), names(popularityMail)))
+  popularityMail<-rbind(popularityMail,setNames(select(mailing, B, mailing_sumB), names(popularityMail)))
+  popularityMail$occ<-as.numeric(popularityMail$occ)
+  popularityMail<-unique(popularityMail)
+  
+  sf<-read.csv(SF)
+  for (i in 1:length(names(sf))) {
+    sf[,i] <- as.character(sf[,i])
+  }
+  sf$A<-tolower(str_replace_all(sf$A, "_", ""))
+  sf$B<-tolower(str_replace_all(sf$B, "_", ""))
+  sf$A<-tolower(str_replace_all(sf$A, "\\.", ""))
+  sf$B<-tolower(str_replace_all(sf$B, "\\.", ""))
+  #sf$A<-tolower(str_replace_all(sf$A, "2", ""))
+  #sf$B<-tolower(str_replace_all(sf$B, "2", ""))
+  
+  sf$A<-trimws(sf$A)
+  sf$B<-trimws(sf$B)
+  
+  sf$order<-ifelse(sf$A<sf$B, 0, 1)
+  
+  tmp<-sf[which(sf$order==0),]
+  x<-sf[which(sf$order==1),]
+  x<-x[,c(2,1,4,3,6,5,7),]
+  names(x)<-names(tmp)
+  tmp<-rbind(tmp, x)
+  
+  sf<-unique(tmp)
+  
+  names(sf)[names(sf) == "A..B"] <- "sf_A..B"
+  names(sf)[names(sf) == "B..A"] <- "sf_B..A"
+  names(sf)[names(sf) == "sumA"] <- "sf_sumA"
+  names(sf)[names(sf) == "sumB"] <- "sf_sumB"
+  
+  sf$order<-NULL
+  
+  popularitySF<-data.frame(option = as.character(), occ = as.character())
+  popularitySF<-rbind(popularitySF,setNames(select(sf, A, sf_sumA), names(popularitySF)))
+  popularitySF<-rbind(popularitySF,setNames(select(sf, B, sf_sumB), names(popularitySF)))
+  popularitySF$occ<-as.numeric(popularitySF$occ)
+  popularitySF<-unique(popularitySF)
+  
+  
+  so<-read.csv(SO)
+  for (i in 1:length(names(so))) {
+    so[,i] <- as.character(so[,i])
+  }
+  so$A<-tolower(str_replace_all(so$A, "_", ""))
+  so$B<-tolower(str_replace_all(so$B, "_", ""))
+  so$A<-tolower(str_replace_all(so$A, "\\.", ""))
+  so$B<-tolower(str_replace_all(so$B, "\\.", ""))
+  #so$A<-tolower(str_replace_all(so$A, "2", ""))
+  #so$B<-tolower(str_replace_all(so$B, "2", ""))
+  
+  so$A<-trimws(so$A)
+  so$B<-trimws(so$B)
+  
+  
+  so$order<-ifelse(so$A<so$B, 0, 1)
+  
+  tmp<-so[which(so$order==0),]
+  x<-so[which(so$order==1),]
+  x<-x[,c(2,1,4,3,6,5,7),]
+  names(x)<-names(tmp)
+  tmp<-rbind(tmp, x)
+  
+  so<-unique(tmp)
+  
+  so$order<-NULL
+  
+  names(so)[names(so) == "A..B"] <- "so_A..B"
+  names(so)[names(so) == "B..A"] <- "so_B..A"
+  names(so)[names(so) == "sumA"] <- "so_sumA"
+  names(so)[names(so) == "sumB"] <- "so_sumB"
+  
+  
+  popularitySO<-data.frame(option = as.character(), occ = as.character())
+  popularitySO<-rbind(popularitySO,setNames(select(so, A, so_sumA), names(popularitySO)))
+  popularitySO<-rbind(popularitySO,setNames(select(so, B, so_sumB), names(popularitySO)))
+  popularitySO$occ<-as.numeric(popularitySO$occ)
+  popularitySO<-unique(popularitySO)
+  
+  nameSim<-read.csv(SIM)
+  for (i in 1:length(names(nameSim))) {
+    nameSim[,i] <- as.character(nameSim[,i])
+  }
+  nameSim$option1<-tolower(str_replace_all(nameSim$option1, "_", ""))
+  nameSim$option2<-tolower(str_replace_all(nameSim$option2, "_", ""))
+  nameSim$option1<-tolower(str_replace_all(nameSim$option1, "\\.", ""))
+  nameSim$option2<-tolower(str_replace_all(nameSim$option2, "\\.", ""))
+  #nameSim$option1<-tolower(str_replace_all(nameSim$option1, "2", ""))
+  #nameSim$option2<-tolower(str_replace_all(nameSim$option2, "2", ""))
+  
+  nameSim$option1<-trimws(nameSim$option1)
+  nameSim$option2<-trimws(nameSim$option2)
+  
+  
+  nameSim$o1<-ifelse(nameSim$option1<nameSim$option2, nameSim$option1, nameSim$option2)
+  nameSim$o2<-ifelse(nameSim$option1>=nameSim$option2, nameSim$option1, nameSim$option2)
+  
+  nameSim$option1<-nameSim$o1
+  nameSim$option2<-nameSim$o2
+  
+  nameSim$o1<-NULL
+  nameSim$o2<-NULL
+  
+  nameSim<-nameSim[which(nameSim$option1 != nameSim$option2),]
+  
+  nameSim<-unique(nameSim)
+  
+  dependencies<-read.csv(DEP, header=FALSE)
+  for (i in 1:length(names(dependencies))) {
+    dependencies[,i] <- as.character(dependencies[,i])
+  }
+  dependencies$V2<-tolower(str_replace_all(dependencies$V2, "_", ""))
+  dependencies$V3<-tolower(str_replace_all(dependencies$V3, "_", ""))
+  
+  dependencies$V2<-tolower(str_replace_all(dependencies$V2, "\\.", ""))
+  dependencies$V3<-tolower(str_replace_all(dependencies$V3, "\\.", ""))
+  
+  dependencies$V2<-tolower(str_replace_all(dependencies$V2, "\\<", ""))
+  dependencies$V3<-tolower(str_replace_all(dependencies$V3, "\\<", ""))
+  
+  dependencies$V2<-tolower(str_replace_all(dependencies$V2, "\\>", ""))
+  dependencies$V3<-tolower(str_replace_all(dependencies$V3, "\\>", ""))
+  
+  #dependencies$V2<-tolower(str_replace_all(dependencies$V2, "2", ""))
+  #dependencies$V3<-tolower(str_replace_all(dependencies$V3, "2", ""))
+  
+  dependencies$V2<-trimws(dependencies$V2)
+  dependencies$V3<-trimws(dependencies$V3)
+  
+  
+  dependencies$o1<-ifelse(dependencies$V2<dependencies$V3, dependencies$V2, dependencies$V3)
+  dependencies$o2<-ifelse(dependencies$V2>=dependencies$V3, dependencies$V2, dependencies$V3)
+  
+  dependencies$V2<-dependencies$o1
+  dependencies$V3<-dependencies$o2
+  dependencies$V1<-1
+  
+  dependencies$o1<-NULL
+  dependencies$o2<-NULL
+  
+  dependencies<-unique(dependencies)
+  
+  # SO - distances
+  sodistdata<-read.csv(SODIST, header=TRUE)
+  sodistdata<-sodistdata %>% 
+    group_by(optionA, optionB) %>% 
+    summarize(minNbreOptionsSO = min(nbreOptions), 
+              medianNbreOptionsSO = median(nbreOptions), 
+              maxNbreOptionsSO = max(nbreOptions), 
+              
+              minNbreWordsSO = min(numwords), 
+              medianNbreWordsSO = median(numwords), 
+              maxNbreWordsSO = max(numwords), 
+              
+              minNbreParagraphsSO = min(numparagraphs), 
+              medianNbreParagraphsSO = median(numparagraphs), 
+              maxNbreParagraphsSO = max(numparagraphs)
+    )
+  # SF - distances
+  sfdistdata<-read.csv(SFDIST, header=TRUE)
+  sfdistdata<-sfdistdata %>% 
+    group_by(optionA, optionB) %>% 
+    summarize(minNbreOptionsSF = min(nbreOptions), 
+              medianNbreOptionsSF = median(nbreOptions), 
+              maxNbreOptionsSF = max(nbreOptions), 
+              
+              minNbreWordsSF = min(numwords), 
+              medianNbreWordsSF = median(numwords), 
+              maxNbreWordsSF = max(numwords), 
+              
+              minNbreParagraphsSF = min(numparagraphs), 
+              medianNbreParagraphsSF = median(numparagraphs), 
+              maxNbreParagraphsSF = max(numparagraphs)
+    )
+  #MAILS - distances MAILDIST
+  maildistdata<-read.csv(MAILDIST, header=TRUE)
+  maildistdata<-maildistdata %>% 
+    group_by(optionA, optionB) %>% 
+    summarize(minNbreOptionsMail = min(nbreOptions), 
+              medianNbreOptionsMail = median(nbreOptions), 
+              maxNbreOptionsMail = max(nbreOptions), 
+              
+              minNbreWordsMail = min(numwords), 
+              medianNbreWordsMail = median(numwords), 
+              maxNbreWordsMail = max(numwords), 
+              
+              minNbreParagraphsMail = min(numparagraphs), 
+              medianNbreParagraphsMail = median(numparagraphs), 
+              maxNbreParagraphsMail = max(numparagraphs)
+    )
+  
+  # where options are declared in the source code:
+  declarations<-read.csv(DECL, header=TRUE)
+  declarations$option1<-tolower(str_replace_all(declarations$option1, "_", ""))
+  declarations$option2<-tolower(str_replace_all(declarations$option2, "_", ""))
+  
+  declarations$option1<-tolower(str_replace_all(declarations$option1, "\\.", ""))
+  declarations$option2<-tolower(str_replace_all(declarations$option2, "\\.", ""))
+  
+  declarations$option1<-tolower(str_replace_all(declarations$option1, "\\<", ""))
+  declarations$option2<-tolower(str_replace_all(declarations$option2, "\\<", ""))
+  
+  declarations$option1<-tolower(str_replace_all(declarations$option1, "\\>", ""))
+  declarations$option2<-tolower(str_replace_all(declarations$option2, "\\>", ""))
+  
+  declarations$tmp<-ifelse(declarations$sameFile=='false', 0, 1)
+  declarations$sameFile<-declarations$tmp
+  declarations$tmp<-NULL
+  
+  # Code metrics:
+  codeMetrics<-read.csv(CODE, header=TRUE)
+  codeMetrics$option1<-tolower(str_replace_all(codeMetrics$option1, "_", ""))
+  codeMetrics$option2<-tolower(str_replace_all(codeMetrics$option2, "_", ""))
+  
+  codeMetrics$option1<-tolower(str_replace_all(codeMetrics$option1, "\\.", ""))
+  codeMetrics$option2<-tolower(str_replace_all(codeMetrics$option2, "\\.", ""))
+  
+  codeMetrics$option1<-tolower(str_replace_all(codeMetrics$option1, "\\<", ""))
+  codeMetrics$option2<-tolower(str_replace_all(codeMetrics$option2, "\\<", ""))
+  
+  codeMetrics$option1<-tolower(str_replace_all(codeMetrics$option1, "\\>", ""))
+  codeMetrics$option2<-tolower(str_replace_all(codeMetrics$option2, "\\>", ""))
+  
+  
+  # Similarity - dependencies
+  #data<-merge(x=nameSim, y=dependencies, by.x=c("option1", "option2"), by.y=c("V2", "V3"), all=TRUE)
+  data<-merge(x=so, y=dependencies, by.x=c("A", "B"), by.y=c("V2", "V3"), all=TRUE)
+  
+  data$dependent<-0
+  data$dependent<-ifelse(is.na(data$V1), 0, 1)
+  
+  data$V1<-NULL
+  names(data)[names(data) == "A"] <- "option1"
+  names(data)[names(data) == "B"] <- "option2"
+  
+  # Similarity - dependencies - SO
+  #data<-merge(x=data, y=so, by.x=c("option1", "option2"), by.y= c("A", "B"), all=TRUE)
+  
+  # Similarity - dependencies - SO - SF
+  data<-merge(x=data, y=sf, by.x=c("option1", "option2"), by.y= c("A", "B"), all=TRUE)
+  
+  # Similarity - dependencies - SO - SF - mailing
+  data<-merge(x=data, y=mailing, by.x=c("option1", "option2"), by.y= c("A", "B"), all=TRUE)
+  
+  data<-merge(x=data, y=popularitySO, 
+              by.x="option1", by.y="option", all=TRUE)
+  data<-data[!is.na(data$option2),]
+  data$so_sumA<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data, y=popularitySO, by.x=c("option2"), by.y=c("option"), all=TRUE)
+  data<-data[!is.na(data$option1),]
+  data$so_sumB<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data, y=popularitySF, by.x=c("option1"), by.y=c("option"), all=TRUE)
+  data<-data[!is.na(data$option2),]
+  data$sf_sumA<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data, y=popularitySF, by.x=c("option2"), by.y=c("option"), all=TRUE)
+  data<-data[!is.na(data$option1),]
+  data$sf_sumB<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data, y=popularityMail, by.x=c("option1"), by.y=c("option"), all=TRUE)
+  data<-data[!is.na(data$option2),]
+  data$mailing_sumA<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data, y=popularityMail, by.x=c("option2"), by.y=c("option"), all=TRUE)
+  data<-data[!is.na(data$option1),]
+  data$mailing_sumB<-data$occ
+  data$occ<-NULL
+  
+  data<-merge(x=data,y=sodistdata, by.x=c("option1", "option2"), by.y=c("optionA", "optionB"), all=TRUE)
+  data<-merge(x=data,y=sfdistdata, by.x=c("option1", "option2"), by.y=c("optionA", "optionB"), all=TRUE)
+  data<-merge(x=data,y=maildistdata, by.x=c("option1", "option2"), by.y=c("optionA", "optionB"), all=TRUE)
+  
+  data<-merge(x=data, y=declarations, by.x=c("option1", "option2"), by.y=c("option1", "option2"))
+  data<-merge(x=data, y=nameSim, by.x=c("option1", "option2"), by.y=c("option1", "option2"))
+  #data<-merge(x=data, y=codeMetrics, by.x=c("option1", "option2"), by.y=c("option1", "option2"))
+  
+  data<-unique(data)
+  
+  for (i in 3:length(names(data))) {
+    data[,i] <- as.character(data[,i])
+  }
+  
+  data[is.na(data)]<-0
+  for (i in 3:length(names(data))) {
+    data[,i] <- as.numeric(data[,i])
+  }
+  data$dependent<-as.factor(data$dependent)
+  data$sameFile<-as.factor(data$sameFile)
+  
+  return(data)
+}
+
+
+
+get_auc<-function(actuals,predicted){
+  predictions<-prediction(predicted,actuals)
+  auc<-ROCR::performance(predictions,'auc')
+  #TPFP<-ROCR::performance(predictions,'tpr', 'fpr')
+  #cutoffs <- data.frame(cut=TPFP@alpha.values[[1]], fpr=TPFP@x.values[[1]], 
+  #                      tpr=TPFP@y.values[[1]])
+  auc<-unlist(slot(auc,'y.values'))
+  result_auc<-min(round(auc,digits=2))
+  result_auc<-ifelse(result_auc<0.50,1-result_auc,result_auc)
+  return(result_auc)
+}
+
+
+getBoostrapSamples <- function(dat, idx) {
+  return(idx)
+}
+
+# ____________________________________________ APACHE __________________________________________
+# Correlation analysis: 
+data<-getData("final_data/apache/mailing_all.csv", 
+              "final_data/apache/SF_all.csv",
+              "final_data/apache/SO_all.csv", 
+              "final_data/apache/nameSimilarity.csv",
+              "final_data/apache/englishDependencies.csv", 
+              "final_data/apache/occurences_no_code_SO_distances.csv",
+              "final_data/apache/occurences_no_code_SF_distances.csv",
+              "final_data/apache/occurences_no_code_mailing_distances.csv",
+              "final_data/apache/declarationmetrics.csv", 
+              "final_data/apache/codemetrics.csv"
+)
+
+
+# we focus on options that are discussed online
+data_2_model<-data[which(!(data$so_A..B == 0 & data$so_B..A == 0 & 
+                             data$sf_A..B == 0 & data$sf_B..A == 0 
+                          # & data$mailing_A..B == 0 & data$mailing_B..A == 0 
+                           )),]
+
+
+
+# downsample first:
+{
+x1<-data_2_model[which(data_2_model$dependent==1),]
+x2<-data_2_model[which(data_2_model$dependent==0),]
+x2<-x2[sample(1:nrow(x2), 2000),]
+data_2_model<-rbind(x1, x2)
+}
+
+rows<-sample(nrow(data_2_model))
+data_2_model<-data_2_model[rows,]
+
+
+#data$dependent<-as.factor(data$dependent)
+{
+  # English words (didn't work)
+  
+  englishWords<-read.csv("final_data/apache/options_dict_apply.txt")
+  
+  englishWords$opt<-tolower(str_replace_all(englishWords$opt, "_", ""))
+  englishWords$opt<-tolower(str_replace_all(englishWords$opt, "\\.", ""))
+  englishWords$opt<-tolower(str_replace_all(englishWords$opt, "\\<", ""))
+  englishWords$opt<-tolower(str_replace_all(englishWords$opt, "\\>", ""))
+  
+  englishWords<-englishWords[which(englishWords$opt_dict==1),]
+  data<-data[which(!(data$option1 %in% englishWords$opt) & data$dependent==1),]
+  data<-data[which(!(data$option2 %in% englishWords$opt) & data$dependent==1),]
+}
+
+{# just core data:
+  
+  options_modules<-read.csv("final_data/apache/descriptions.csv")
+  
+  options_modules$option<-tolower(str_replace_all(options_modules$option, "_", ""))
+  options_modules$option<-tolower(str_replace_all(options_modules$option, "\\.", ""))
+  options_modules$option<-tolower(str_replace_all(options_modules$option, "\\<", ""))
+  options_modules$option<-tolower(str_replace_all(options_modules$option, "\\>", ""))
+  #options_modules$option<-trimws(tolower(str_replace_all(options_modules$option, "2", "")))
+  
+  options_modules<-unique(select(options_modules, mod, option))
+  data_2_model<-merge(x=data, y=options_modules, by.x="option1", by.y="option")
+  
+  #data_2_model$option1<-NULL
+  #data_2_model$option2<-NULL
+  #data_2_model<-data_2_model[which(data_2_model$mod=="core"),]
+  #data_2_model$mod<-NULL
+  
+  
+  rows<-sample(nrow(data_2_model))
+  data_2_model<-data_2_model[rows,]
+  data_2_model$mod<-as.factor(data_2_model$mod)
+  data_2_model<-fastDummies::dummy_cols(data_2_model)
+  data_2_model$dependent_0<-NULL
+  data_2_model$dependent_1<-NULL
+  data_2_model$mod<-NULL
+  data_2_model$option1<-NULL
+  data_2_model$option2<-NULL
+}
+
+#data$mailing_A..B<-NULL
+#data$mailing_B..A<-NULL
+#data$mailing_sumA<-NULL
+#data$mailing_sumB<-NULL
+
+#data_2_model<-data[which(!(data$so_A..B == 0 & data$so_B..A == 0 & 
+#                             data$sf_A..B == 0 & data$sf_B..A == 0)),]
+
+#data_2_model<-data[which(!(data$mailing_A..B == 0 & data$mailing_B..A == 0)),]
+
+#x1<-data_2_model[which(data_2_model$dependent==1),]
+#x2<-data_2_model[which(data_2_model$dependent==0),]
+#x2<-x2[sample(1:nrow(x2), 1948),]
+#data_2_model<-rbind(x1, x2)
+
+#data_2_model<-unique(data_2_model)
+#data_2_model$option1<-as.factor(data_2_model$option1)
+#data_2_model$option2<-as.factor(data_2_model$option2)
+#data_2_model$option1<-NULL
+#data_2_model$option2<-NULL
+
+
+
+
+{
+  data_2_model<-data
+  
+  
+  data_2_model$min_so<-pmin(data_2_model$so_A..B, data_2_model$so_B..A)
+  data_2_model$min_sf<-pmin(data_2_model$sf_A..B, data_2_model$sf_B..A)
+  data_2_model$min_mail<-pmin(data_2_model$mailing_A..B, data_2_model$mailing_B..A)
+  
+  data_2_model$max_so<-pmax(data_2_model$so_A..B, data_2_model$so_B..A)
+  data_2_model$max_sf<-pmax(data_2_model$sf_A..B, data_2_model$sf_B..A)
+  data_2_model$max_mail<-pmax(data_2_model$mailing_A..B, data_2_model$mailing_B..A)
+  
+  data_2_model$so_A..B<-NULL
+  data_2_model$sf_A..B<-NULL
+  data_2_model$mailing_A..B<-NULL
+  data_2_model$so_B..A<-NULL
+  data_2_model$sf_B..A<-NULL
+  data_2_model$mailing_B..A<-NULL
+  
+  data_2_model$min_sum_so<-pmin(data_2_model$so_sumA, data_2_model$so_sumB)
+  data_2_model$min_sum_sf<-pmin(data_2_model$sf_sumA, data_2_model$sf_sumA)
+  data_2_model$min_sum_mail<-pmin(data_2_model$mailing_sumA, data_2_model$mailing_sumB)
+  
+  data_2_model$max_sum_so<-pmax(data_2_model$so_sumA, data_2_model$so_sumB)
+  data_2_model$max_sum_sf<-pmax(data_2_model$sf_sumA, data_2_model$sf_sumA)
+  data_2_model$max_sum_mail<-pmax(data_2_model$mailing_sumA, data_2_model$mailing_sumB)
+  
+  #nbreFilesO1,nbreFilesO2,nbreSharedFiles,percentageSharedFiles,activenessO1,activenessO2,
+  # nbreFunctionsO1,nbreFunctionsO2,nbreSharedFunctions,percentageSharedFunctions
+  data_2_model$nbreFilesO1<-NULL
+  data_2_model$nbreFilesO2<-NULL
+  data_2_model$nbreSharedFiles<-NULL
+  data_2_model$minActiveness<-pmin(data_2_model$activenessO1, data_2_model$activenessO2)
+ # data_2_model$medActiveness<-pmedian(data_2_model$activenessO1, data_2_model$activenessO2)
+  data_2_model$maxActiveness<-pmax(data_2_model$activenessO1, data_2_model$activenessO2)
+  data_2_model$nbreFunctionsO1<-NULL
+  data_2_model$nbreFunctionsO2<-NULL
+  data_2_model$nbreSharedFunctions<-NULL
+  
+  
+  data_2_model$so_sumA<-NULL
+  data_2_model$sf_sumA<-NULL
+  data_2_model$mailing_sumA<-NULL
+  data_2_model$so_sumB<-NULL
+  data_2_model$sf_sumB<-NULL
+  data_2_model$mailing_sumB<-NULL
+  
+  rows<-sample(nrow(data_2_model))
+  data_2_model<-data_2_model[rows,]
+  
+}
+data_2_model$option1<-NULL
+data_2_model$option2<-NULL
+data_2_model$dependent<-as.factor(data_2_model$dependent)
+data_2_model$sameFile<-as.factor(data_2_model$sameFile)
+
+aucs<-list()
+precisions<-list()
+recalls<-list()
+specificities<-list()
+for (j in 1:4) {
+  
+  logistic_regression_performance_results<-list()
+  logistic_regression_interpretation_results<-list()
+  precision<-list()
+  recall<-list()
+  specif<-list()
+  
+  #Model building
+  boot_indices<-boot(data_2_model, 
+                     statistic = getBoostrapSamples, 
+                     strata=data_2_model$dependent
+                     , R=100)$t
+  #boot_indices <- createFolds(data_2_model$dependent, k = 10, list = TRUE, returnTrain = FALSE)
+  for(i in 1:100){
+    train<-data_2_model[boot_indices[i,],]
+    #train<-data_2_model[boot_indices[[i]],]
+    if (j == 2) {
+      downsample<-downSample(x=train[,-grep("dependent", colnames(train))], y = train$dependent, yname = "dependent")
+      train<-downsample
+    }
+    if (j == 3) {
+      oversample<-upSample(x=train[,-grep("dependent", colnames(train))], y = train$dependent, 
+                           yname = "dependent")
+      train<-oversample
+    }
+    if (j == 4) {
+      smotesample<-SMOTE(dependent~.,data=train)
+      train<-smotesample
+    }
+    if (j == 5) {
+      rosesample<-ROSE(dependent~.,data=train)
+      train<-rosesample
+    }
+    
+    tmp<-train
+    t<-train[,-grep("dependent", colnames(train))]
+    t<-Filter(function(x)(length(unique(x))>1), t)
+    corr<-varclus(~., data=t)
+    corr<-corr$sim
+    corr[upper.tri(corr)] <- 0
+    diag(corr) <- 0
+    train<-t[,!apply(corr,2,function(x) any(x > 0.7))]
+    train$dependent<-tmp$dependent
+    
+    test<-data_2_model[-boot_indices[i,],]
+    
+    dd = datadist(train) 
+    options(datadist='dd')
+    #logistic_regression_model<-lrm(dependent~.,data=train,method="lrm.fit", maxit=100)
+    logistic_regression_model<-randomForest(dependent~.,data=train, importance = TRUE)
+    
+    
+    actuals<-test$dependent
+    test$dependent<-NULL
+    #predicted<- predict(logistic_regression_model,newdata=test,type='fitted.ind')
+    predicted<-predict(logistic_regression_model,newdata=test,type='prob')[,2]
+     
+    results <- ifelse(predicted > 0.5,1,0)
+    u <- union(actuals, results)
+    t <- table(factor(actuals, u), factor(results, u))
+    cm <- confusionMatrix(t)
+    TN<-cm$table[1]
+    FP<-cm$table[2]
+    FN<-cm$table[3]
+    TP<-cm$table[4]
+    
+    pr<-TP/(TP+FP)
+    rc<-TP/(TP+FN)
+    sp<-TN/(TN+FP)
+    
+    precision[[i]]<-pr
+    recall[[i]]<-rc
+    specif[[i]]<-sp
+    
+    logistic_regression_performance_results[[i]]<-get_auc(actuals,predicted)
+    #logistic_regression_interpretation_results[[i]]<-anova(logistic_regression_model)[,1][-length(anova(logistic_regression_model)[,1])]
+    
+  }
+  
+  logistic_regression_performance_results<-do.call(rbind,lapply(logistic_regression_performance_results,function(x) x))
+  #logistic_regression_interpretation_results<-do.call(rbind,lapply(logistic_regression_interpretation_results,function(x) x))
+  precision<-do.call(rbind,lapply(precision,function(x) x))
+  recall<-do.call(rbind,lapply(recall,function(x) x))
+  specif<-do.call(rbind,lapply(specif,function(x) x))
+  
+  print(paste0('Median performance over 100 bootstrap is: ',median(logistic_regression_performance_results)))
+  
+  aucs[[j]]<-logistic_regression_performance_results
+  precisions[[j]]<-precision
+  recalls[[j]]<-recall
+  specificities[[j]]<-specif
+}
+
+boxplot(aucs, names = c("No-resampling", "Under-sampling", "Over-sampling", "SMOTE"))
+boxplot(precisions, names = c("No-resampling", "Under-sampling", "Over-sampling", "SMOTE"))
+boxplot(recalls, names = c("No-resampling", "Under-sampling", "Over-sampling", "SMOTE"))
+boxplot(specificities, names = c("No-resampling", "Under-sampling", "Over-sampling", "SMOTE"))
+# ->>>>>>>>>>>>>>>>>>>>>>> Old approach without rebalancing techniques:
+
+
+
+data_corr<-data_2_model
+data_corr$dependent<-NULL
+
+for (i in 1:length(names(data_corr))) {
+  data_corr[,i] <- as.numeric(data_corr[,i])
+}
+
+
+
+corr<-varclus(~ 
+                option_similarity+
+                so_A..B + 
+                so_B..A +
+                so_sumA + 
+                so_sumB + 
+                sf_A..B +
+                sf_B..A +
+                sf_sumA + 
+                sf_sumB +
+                mailing_A..B + 
+                mailing_B..A + 
+                mailing_sumA + 
+                mailing_sumB
+              , 
+              data = data_corr)
+
+plot(corr, labels=c("Option Similarity",
+                    "SO Conf (A => B)", 
+                    "SO Conf (B => A)", 
+                    "SO Popularity of A", 
+                    "SO Popularity of B", 
+                    "SF Conf (A => B)", 
+                    "SF Conf (B => A)", 
+                    "SF Popularity of A", 
+                    "SF Popularity of B", 
+                    "Mailing Conf (A => B)", 
+                    "Mailing Conf (B => A)", 
+                    "Mailing Popularity of A", 
+                    "Mailing Popularity of B"))
+
+#, labels=c("Server Fault Confidence B -> A", 
+#"Server Fault popularity of A", 
+#"Mailing list popularity of A", 
+#"Server Fault Confidence A -> B ", 
+#"Server Fault popularity of B", 
+#"Mailing list popluarity of B", 
+#"Mailing list Confidence A -> B ", 
+#"Mailing list Confidence B -> A ",
+#"Server Fault Confidence A -> B",
+#"Server Fault Confidence B -> A", 
+#"Server Fault popularity of A", 
+#"Server Fault popularity of B"
+
+abline ( h = 1 - 0.7 , col = "red" , lty =2)
+
+redun(~ so_A..B + 
+        #so_B..A +
+        so_sumA + 
+        #so_sumB + 
+        sf_A..B +
+        sf_B..A +
+        sf_sumA + 
+        sf_sumB +
+        mailing_A..B + 
+        mailing_B..A + 
+        mailing_sumA + 
+        mailing_sumB
+      , 
+      data = data_corr)
+
+mdata<-select(data_2_model, 
+              so_A..B,
+              #so_B..A +
+              so_sumA,
+              #so_sumB + 
+              sf_A..B,
+              sf_B..A,
+              sf_sumA,
+              sf_sumB,
+              mailing_A..B, 
+              mailing_B..A, 
+              mailing_sumA, 
+              mailing_sumB,
+              dependent
+)
+
+
+
+
+mdataTRUE<-mdata[which(mdata$dependent==TRUE),]
+mdataFALSE<-mdata[which(mdata$dependent==FALSE),]
+mdata<-mdataFALSE[sample(1:nrow(mdataFALSE), 277),]
+mdata<-rbind(mdata, mdataTRUE)
+
+#precisions<-c()
+#recalls<-c()
+logistic_regression_performance_results<-list()
+logistic_regression_interpretation_results<-list()
+
+#Model building
+boot_indices<-boot(mdata, statistic = getBoostrapSamples, strata=mdata$dependent, R=100)$t
+#boot_indices<-getBoostrapSamples(mdata,100,55)
+for(i in 1:100){
+  train<-mdata[boot_indices[i,],]
+  test<-mdata[-boot_indices[i,],]
+  
+  train$dependent<-as.factor(train$dependent)
+  test$dependent<-as.factor(test$dependent)
+  
+  dd = datadist(train) 
+  options(datadist='dd')
+  logistic_regression_model<-lrm(dependent~.,data=train,method="lrm.fit", maxit=100)
+  
+  actuals<-test$dependent
+  test$dependent<-NULL
+  predicted<-predict(logistic_regression_model,newdata=test,type='fitted.ind')
+  
+  
+  #results <- ifelse(predicted > 0.4,TRUE,FALSE)
+  #u <- union(actuals, results)
+  #t <- table(factor(actuals, u), factor(results, u))
+  #cm <- confusionMatrix(t)
+  #TN<-cm$table[1]
+  #FP<-cm$table[2]
+  #FN<-cm$table[3]
+  #TP<-cm$table[4]
+  
+  #precision<-TP/(TP+FP)
+  #recall<-TP/(TP+FN)
+  
+  
+  
+  precisions<-rbind(precisions, precision)
+  recalls<-rbind(recall, precision)
+  
+  logistic_regression_performance_results[[i]]<-get_auc(actuals,predicted)
+  logistic_regression_interpretation_results[[i]]<-anova(logistic_regression_model)[,1][-length(anova(logistic_regression_model)[,1])]
+}
+
+logistic_regression_performance_results<-do.call(rbind,lapply(logistic_regression_performance_results,function(x) x))
+logistic_regression_interpretation_results<-do.call(rbind,lapply(logistic_regression_interpretation_results,function(x) x))
+
+logistic_regression_performance_results_apache<-logistic_regression_performance_results
+print(paste0('Median performance over 100 bootstrap is: ',median(logistic_regression_performance_results)))
+
+#Scott knott test
+logistic_importance_ranks<-sk_esd(logistic_regression_interpretation_results)$groups
+print(paste0('The feature importance ranks are'))
+print(logistic_importance_ranks)
+
+
+model<-lrm(dependent~.,data=mdata,x=TRUE,y=TRUE)
+boot_model<-bootcov(model, B=100,pr=TRUE,maxit=1000)
+fastbw(boot_model, rule ="aic")
+model<-lrm(dependent~so_A..B+sf_A..B+sf_B..A+sf_sumA+mailing_A..B+mailing_B..A+mailing_sumA+mailing_sumB
+           ,data=mdata,x=TRUE,y=TRUE)
+
+eclipse_nomogram <- nomogram(boot_model, fun=function(x)1/(1+exp(-x)),  # or fun=plogis
+                             fun.at=c(.001,seq(.1,.9,by=.5),.999),
+                             lp = FALSE,
+                             funlabel="Dependent Options",
+                             abbrev = TRUE)
+
+plot(eclipse_nomogram, xfrac=.30, cex.var = 1.0, cex.axis = 0.7,main="What makes a module defective?")
+
+
+cassandra_data<-getData("final_data/cassandra/MAIL_cassandra_all.csv", 
+                        "final_data/cassandra/SF_cassandra_all.csv",
+                        "final_data/cassandra/SO_cassandra_all.csv", 
+                        "final_data/cassandra/cassandraOptionNameSimilarity.csv",
+                        "final_data/cassandra/dependencies.csv"
+)
+
+
+cassandra_data_2<-cassandra_data[which(!(
+  cassandra_data$so_A..B == 0 & cassandra_data$so_B..A == 0 & 
+    cassandra_data$sf_A..B ==0  & cassandra_data$sf_B..A == 0 & 
+    cassandra_data$mailing_A..B==0 & cassandra_data$mailing_B..A==0)),]
+
+boot_indices<-boot(cassandra_data_2, statistic = getBoostrapSamples, strata=cassandra_data_2$dependent, R=100)$t
+logistic_regression_performance_results<-list()
+for (i in 1:100) {
+  test<-mdata[boot_indices[i,],]
+  actuals<-test$dependent
+  test$dependent<-NULL
+  predicted<-predict(boot_model,newdata=test,type='fitted.ind')
+  logistic_regression_performance_results[[i]]<-get_auc(actuals,predicted)
+}
+
+logistic_regression_performance_results<-do.call(rbind,lapply(logistic_regression_performance_results,function(x) x))
+print(paste0('Median performance over 100 bootstrap is: ',median(logistic_regression_performance_results)))
+
+#________________________________________ CASSANDRA _____________________________________________
+
+
+# Correlation analysis: 
+data<-getData("final_data/cassandra/MAIL_cassandra_all.csv", 
+              "final_data/cassandra/SF_cassandra_all.csv",
+              "final_data/cassandra/SO_cassandra_all.csv", 
+              "final_data/cassandra/cassandraOptionNameSimilarity.csv",
+              "final_data/cassandra/dependencies.csv"
+)
+# we focus on options that are discussed online
+data_2_model<-data[which(!(data$so_A..B == 0 & data$so_B..A == 0 & 
+                             data$sf_A..B ==0 & data$sf_B..A == 0 & 
+                             data$mailing_A..B==0 & data$mailing_B..A==0)),]
+
+data_2_model$option1<-NULL
+data_2_model$option2<-NULL
+
+data_corr<-data_2_model
+data_corr$dependent<-NULL
+
+for (i in 1:length(names(data_corr))) {
+  data_corr[,i] <- as.numeric(data_corr[,i])
+}
+
+corr<-varclus(~ 
+                so_A..B + 
+                so_B..A +
+                so_sumA + 
+                so_sumB + 
+                sf_A..B +
+                sf_B..A +
+                sf_sumA + 
+                sf_sumB +
+                mailing_A..B + 
+                mailing_B..A + 
+                mailing_sumA + 
+                mailing_sumB
+              , 
+              data = data_corr)
+
+plot(corr, labels=c("SO Conf (A => B)", 
+                    "SO Conf (B => A)", 
+                    "SO Popularity of A", 
+                    "SO Popularity of B", 
+                    "SF Conf (A => B)", 
+                    "SF Conf (B => A)", 
+                    "SF Popularity of A", 
+                    "SF Popularity of B", 
+                    "Mailing Conf (A => B)", 
+                    "Mailing Conf (B => A)", 
+                    "Mailing Popularity of A", 
+                    "Mailing Popularity of B"))
+
+
+abline ( h = 1 - 0.7 , col = "red" , lty =2)
+
+
+redun(~ so_A..B + 
+        #so_B..A +
+        so_sumA + 
+        #so_sumB + 
+        #sf_A..B +
+        #sf_B..A +
+        #sf_sumA + 
+        #sf_sumB +
+        mailing_A..B + 
+        mailing_B..A #+ 
+      #mailing_sumA #+ 
+      #mailing_sumB
+      , 
+      data = data_corr)
+
+mdata<-select(data_2_model, 
+              so_A..B,
+              #so_B..A +
+              so_sumA,
+              #so_sumB + 
+              #sf_A..B +
+              #sf_B..A +
+              #sf_sumA + 
+              #sf_sumB +
+              mailing_A..B, 
+              mailing_B..A, #+ 
+              #mailing_sumA #+ 
+              #mailing_sumB
+              dependent
+)
+
+
+
+get_auc<-function(actuals,predicted){
+  predictions<-prediction(predicted,actuals)
+  auc<-ROCR::performance(predictions,'auc')
+  
+  eval=performance(predictions,"acc")
+  max_value<- which.max(slot(eval,"y.values")[[1]])
+  acc <- slot(eval,"y.values")[[1]][max_value]
+  thres <- slot(eval,"x.values")[[1]][max_value]
+  #print(c(accuacy=acc,threshold_or_cutoff=thres))
+  
+  auc<-unlist(slot(auc,'y.values'))
+  result_auc<-min(round(auc,digits=2))
+  result_auc<-ifelse(result_auc<0.50,1-result_auc,result_auc)
+  return(result_auc)
+}
+
+
+getBoostrapSamples <- function(dat, idx) {
+  return(idx)
+}
+
+
+logistic_regression_performance_results<-list()
+logistic_regression_interpretation_results<-list()
+
+#Model building
+boot_indices<-boot(mdata, statistic = getBoostrapSamples, strata=mdata$dependent, R=100)$t
+#boot_indices<-getBoostrapSamples(mdata,100,55)
+for(i in 1:100){
+  train<-mdata[boot_indices[i,],]
+  test<-mdata[-boot_indices[i,],]
+  
+  dd = datadist(train) 
+  options(datadist='dd')
+  logistic_regression_model<-lrm(dependent~.,data=train,method="lrm.fit")
+  actuals<-test$dependent
+  test$dependent<-NULL
+  predicted<-predict(logistic_regression_model,newdata=test,type='fitted.ind')
+  logistic_regression_performance_results[[i]]<-get_auc(actuals,predicted)
+  logistic_regression_interpretation_results[[i]]<-anova(logistic_regression_model)[,1][-length(anova(logistic_regression_model)[,1])]
+}
+
+logistic_regression_performance_results<-do.call(rbind,lapply(logistic_regression_performance_results,function(x) x))
+logistic_regression_interpretation_results<-do.call(rbind,lapply(logistic_regression_interpretation_results,function(x) x))
+
+print(paste0('Median performance over 100 bootstrap is: ',median(logistic_regression_performance_results)))
+
+performance_results<-data.frame(Apache=logistic_regression_performance_results_apache, 
+                                Cassandra=logistic_regression_performance_results)
+
+boxplot(performance_results)
+
+
+#Scott knott test
+logistic_importance_ranks<-sk_esd(logistic_regression_interpretation_results)$groups
+print(paste0('The feature importance ranks are'))
+print(logistic_importance_ranks)
+
+
+model<-lrm(dependent~.,data=mdata,x=TRUE,y=TRUE)
+boot_model<-bootcov(model, B=100,pr=TRUE,maxit=1000)
+
+
+eclipse_nomogram <- nomogram(boot_model, fun=function(x)1/(1+exp(-x)),  # or fun=plogis
+                             fun.at=c(.001,seq(.1,.9,by=.5),.999),
+                             lp = FALSE,
+                             funlabel="Dependent Options",
+                             abbrev = TRUE)
+
+plot(eclipse_nomogram, xfrac=.30, cex.var = 1.0, cex.axis = 0.7,main="What makes a module defective?")
+
+
+
+
+
+# ____________________________________________ APACHE Modules __________________________________________
+# Correlation analysis: 
+data<-getData("final_data/apache/mail_all.csv", 
+              "final_data/apache/serverfault.csv",
+              "final_data/apache/SO_all.csv", 
+              "final_data/apache/nameSimilarity.csv",
+              "final_data/apache/dependencies.csv"
+)
+
+options_modules<-read.csv("final_data/apache/descriptions.csv")
+
+options_modules$option<-tolower(str_replace_all(options_modules$option, "_", ""))
+options_modules$option<-tolower(str_replace_all(options_modules$option, "\\.", ""))
+options_modules$option<-tolower(str_replace_all(options_modules$option, "\\<", ""))
+options_modules$option<-tolower(str_replace_all(options_modules$option, "\\>", ""))
+data$option1<-trimws(data$option1)
+
+
+# we focus on options that are discussed online
+data_2_model<-data[which(!(data$so_A..B == 0 & data$so_B..A == 0 & 
+                             data$sf_A..B ==0 & data$sf_B..A == 0 & 
+                             data$mailing_A..B==0 & data$mailing_B..A==0)),]
+
+options_modules<-unique(select(options_modules, mod, option))
+data_2_model<-merge(x=data_2_model, y=options_modules, by.x="option1", by.y="option")
+
+
+data_2_model$option1<-NULL
+data_2_model$option2<-NULL
+
+mdata_mod<-select(data_2_model, 
+                  so_A..B,
+                  #so_B..A +
+                  so_sumA,
+                  #so_sumB + 
+                  sf_A..B,
+                  sf_B..A,
+                  sf_sumA,
+                  sf_sumB,
+                  mailing_A..B, 
+                  mailing_B..A, 
+                  mailing_sumA, 
+                  mailing_sumB,
+                  dependent,
+                  mod
+)
+
+
+
+get_auc<-function(actuals,predicted){
+  predictions<-prediction(predicted,actuals)
+  auc<-ROCR::performance(predictions,'auc')
+  auc<-unlist(slot(auc,'y.values'))
+  result_auc<-min(round(auc,digits=2))
+  result_auc<-ifelse(result_auc<0.50,1-result_auc,result_auc)
+  return(result_auc)
+}
+
+
+getBoostrapSamples <- function(dat, idx) {
+  return(idx)
+}
+
+mods<-c("core", "mod_ssl", "mod_proxy", "mpm_common", "mod_mime", "mod_alias", "mod_rewrite")
+for (mod in mods) {
+  mdata<-mdata_mod[which(mdata_mod$mod==mod),]
+  mdata$mod<-NULL
+  print("----------")
+  print(mod)
+  print(summary(mdata$dependent))
+  if (sum(mdata$dependent)>= 20) {
+    logistic_regression_performance_results<-list()
+    logistic_regression_interpretation_results<-list()
+    
+    #Model building
+    boot_indices<-boot(mdata, statistic = getBoostrapSamples, strata=mdata$dependent, R=100)$t
+    #boot_indices<-getBoostrapSamples(mdata,100,55)
+    for(i in 1:100){
+      train<-mdata[boot_indices[i,],]
+      test<-mdata[-boot_indices[i,],]
+      
+      dd = datadist(train) 
+      options(datadist='dd')
+      logistic_regression_model<-lrm(dependent~.,data=train,method="lrm.fit", maxit=1000)
+      actuals<-test$dependent
+      test$dependent<-NULL
+      predicted<-predict(logistic_regression_model,newdata=test,type='fitted.ind')
+      logistic_regression_performance_results[[i]]<-get_auc(actuals,predicted)
+      logistic_regression_interpretation_results[[i]]<-anova(logistic_regression_model)[,1][-length(anova(logistic_regression_model)[,1])]
+    }
+    
+    logistic_regression_performance_results<-do.call(rbind,lapply(logistic_regression_performance_results,function(x) x))
+    logistic_regression_interpretation_results<-do.call(rbind,lapply(logistic_regression_interpretation_results,function(x) x))
+    
+    logistic_regression_performance_results_apache<-logistic_regression_performance_results
+    print(paste0('Median performance over 100 bootstrap is: ',median(logistic_regression_performance_results)))
+  }
+}
+#Scott knott test
+logistic_importance_ranks<-sk_esd(logistic_regression_interpretation_results)$groups
+print(paste0('The feature importance ranks are'))
+print(logistic_importance_ranks)
+
+

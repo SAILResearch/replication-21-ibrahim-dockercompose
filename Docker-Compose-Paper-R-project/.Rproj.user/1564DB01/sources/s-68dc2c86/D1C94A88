@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1568955321778.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D1C94A88",
+    "lastKnownWriteTime" : 1568909407,
+    "last_content_update" : 1568909407,
+    "path" : "~/replication-docker-compose/Docker-Compose-Paper/rqs/data/feature_categories.csv",
+    "project_path" : "rqs/data/feature_categories.csv",
+    "properties" : {
+        "cursorPosition" : "79,8",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "text"
+}

@@ -1,0 +1,9 @@
+{
+    "path" : "~/replication-docker-compose/Docker-Compose-Paper/rqs/scripts",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

@@ -1,0 +1,227 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here, reshape, sqldf, splitstackshape, stringr)
+
+compose_file_features = read.csv(here("rqs/data","compose_features.csv"), header = TRUE, sep = ",")
+
+
+compose_feature_categories = read.csv(here("rqs/data","feature_categories.csv"), header = TRUE, sep = ",")
+
+
+compose_file_features$owner_project = paste(compose_file_features$owner_id, compose_file_features$project_name, sep = "/")
+compose_file_features$feature = trimws(compose_file_features$feature)
+
+
+compose_file_actual_features = compose_file_features[compose_file_features$feature %in% compose_feature_categories$Feature, ]
+
+compose_file_actual_features = sqldf("select compose_file_actual_features.*, compose_feature_categories.Category  
+      from compose_file_actual_features 
+      left outer join compose_feature_categories on 
+      compose_file_actual_features.feature = compose_feature_categories.Feature")
+
+feature_counts_by_project = sqldf("select feature, count(distinct owner_project) as count from compose_file_actual_features group by feature")
+feature_count_for_each_category = sqldf("select * from compose_file_actual_features ")
+feature_category_count_by_project = sqldf("select Category, count(distinct owner_project) as count from compose_file_actual_features group by Category")
+
+feature_counts_by_project$percentage = round(feature_counts_by_project$count/length(unique(compose_file_actual_features$owner_project))*100, 2)
+feature_category_count_by_project$percentage = round(feature_category_count_by_project$count/length(unique(compose_file_actual_features$owner_project))*100, 2)
+
+feature_counts_by_project$feature = as.character(feature_counts_by_project$feature)
+feature_category_count_by_project$Category = as.character(feature_category_count_by_project$Category)
+
+feature_category_count_by_project = feature_category_count_by_project[order(feature_category_count_by_project
+                                                                            $percentage, decreasing = FALSE),]
+feature_category_count_by_project$Category = factor(feature_category_count_by_project
+                                                    $Category, level = feature_category_count_by_project
+                                                    $Category)
+ggplot(feature_category_count_by_project
+       , aes(Category, percentage, label = sprintf("%.1f%% (%i)", percentage, count)))+
+  geom_linerange(aes(x=reorder(Category, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = Category, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.1, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects (# of projects)")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,125))
+
+category_feature_count = sqldf("select category, count(*) as count from compose_feature_categories group by Category")
+each_project_category_count = sqldf("select owner_project, Category, count(distinct feature) as count from compose_file_actual_features group by owner_project, Category")
+
+each_project_category_count = sqldf("select each_project_category_count.*, category_feature_count.count as total_feature_count 
+                                                    from each_project_category_count left outer join 
+                                                   category_feature_count on 
+                                                   each_project_category_count.Category = category_feature_count.category")
+
+each_project_category_count$percentage_used = round(each_project_category_count$count/each_project_category_count$total_feature_count*100)
+each_project_category_count_category_count = each_project_category_count
+each_project_category_count_category_count$Category_with_count = sprintf("%s (%s)", each_project_category_count_category_count$Category, each_project_category_count_category_count$total_feature_count)
+
+medians = aggregate(percentage_used ~ Category_with_count, each_project_category_count_category_count, median)
+colnames(medians) = c('category', 'median % used')
+# print("median of median:")
+# print(median(medians$percentage_used))
+View(medians)
+
+ggplot(each_project_category_count_category_count, aes(x=reorder(Category_with_count, percentage_used, median), y=percentage_used)) + 
+  #geom_violin(trim = FALSE)+
+  geom_boxplot(width=0.8)+
+  coord_flip()+
+  #geom_violin()+
+  scale_y_continuous(trans = "log1p", breaks = c(0,1,5,10,25,50,100))+
+  theme_bw()+ 
+  theme(axis.text.x = element_text(size = 10))+
+  xlab("")+
+  ylab("% of options used by the projects")
+
+
+feature_counts_by_project = feature_counts_by_project[order(feature_counts_by_project
+                                                            $percentage, decreasing = FALSE),]
+
+
+#feature_counts = rbind(data.frame(feature="Others", percentage=others), feature_counts)
+
+
+feature_counts_by_project$feature = factor(feature_counts_by_project
+                                           $feature, level = feature_counts_by_project
+                                           $feature)
+
+feature_counts_by_project = feature_counts_by_project[order(-feature_counts_by_project$percentage),]
+
+feature_counts_by_project = feature_counts_by_project[1:10,]
+ggplot(feature_counts_by_project
+       , aes(feature, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(feature, percentage), ymin = 0, ymax = percentage))+
+  geom_point(aes(x = feature, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of projects")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,90))
+
+
+
+##### options co-occurance 
+
+features = as.data.frame(unique(compose_file_features$feature))
+colnames(features) = c('feature')
+
+projects = as.data.frame(unique(compose_file_features$owner_project))
+colnames(projects) = c('owner_project')
+
+project_with_features = sqldf("select * from projects, features")
+project_with_features$count = 0
+
+used_feature_by_projects = sqldf("select owner_project, feature, count(*) as count from compose_file_features group by owner_project, feature")
+
+used_feature_by_projects = rbind(used_feature_by_projects[, c('owner_project','feature', 'count')], project_with_features)
+used_feature_by_projects= sqldf("select owner_project, feature, max(count) as count from used_feature_by_projects group by owner_project, feature")
+
+used_feature_by_projects = sqldf("select * from used_feature_by_projects where feature in (select distinct feature from feature_counts_by_project)")
+
+# used_feature_by_projects_images = used_feature_by_projects[used_feature_by_projects$feature == "image",]
+
+compose_file_selected_features = sqldf("select * from compose_file_features where feature in (select distinct feature from used_feature_by_projects)")
+feature_co_occurance = sqldf("select owner_project, parent, group_concat(feature) as features from compose_file_selected_features group by owner_project, parent")
+features =  as.data.frame(unique(compose_file_selected_features$feature))
+colnames(features) = c('feature')
+features$feature = as.character(features$feature)
+
+feature_support = data.frame(feature1 = character(), feature2 = character(), support = numeric(),
+                             feature1_support = numeric(), feature2_support = numeric(), 
+                             not_feature1_support = numeric(), not_feature2_support = numeric(), 
+                             feature1_not_feature2_support = numeric(), feature2_not_feature1_support = numeric())
+
+for(i in 1:nrow(features)){
+  for(j in 1:nrow(features)){
+    feature1 = features[i, c('feature')]
+    feature2 = features[j, c('feature')]
+    
+    feature1_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature2_support = nrow(feature_co_occurance[grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    not_feature1_support = nrow(feature_co_occurance[!grepl(feature1,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    not_feature2_support = nrow(feature_co_occurance[!grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    feature_1_and_2_co_occur_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features) & grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature_1_but_not_feature2_support = nrow(feature_co_occurance[grepl(feature1,feature_co_occurance$features) & !grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    feature_2_but_not_feature1_support = nrow(feature_co_occurance[!grepl(feature1,feature_co_occurance$features) & grepl(feature2,feature_co_occurance$features),])/nrow(feature_co_occurance)
+    
+    feature_support = rbind(feature_support, data.frame(feature1 = feature1, feature2 = feature2,
+                                                        feature1_support = feature1_support, feature2_support = feature2_support,
+                                                        not_feature1_support = not_feature1_support, not_feature2_support = not_feature2_support,
+                                                        co_occur_support = feature_1_and_2_co_occur_support,
+                                                        feature1_not_feature2_support = feature_1_but_not_feature2_support, 
+                                                        feature2_not_feature1_support = feature_2_but_not_feature1_support))
+  }
+}
+
+
+feature_support$conf_f1_to_f2 = feature_support$co_occur_support/feature_support$feature1_support
+
+ggplot(data = feature_support, aes(x=feature1, y=feature2, fill=conf_f1_to_f2)) + 
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(0,1), space = "Lab",
+                       name="Confidence" ) +
+  geom_text(aes(label = sprintf("%.1f",conf_f1_to_f2)), size = 3) +
+  theme_test()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1), axis.text.y = element_text(size=10),
+        legend.title=element_text(size=10), legend.text = element_text(size=8))+
+  xlab("")+
+  ylab("")
+
+
+######## unused options
+
+compose_file_features$feature = trimws(compose_file_features$feature)
+
+compose_file_version1_features = read.csv(here("rqs/data/version_options","version1.csv"), header = FALSE, sep = ",")
+
+compose_file_version1_features = as.data.frame(t(compose_file_version1_features))
+colnames(compose_file_version1_features) = c('feature')
+compose_file_version1_features$feature = trimws(compose_file_version1_features$feature)
+
+compose_file_version2_features =  read.csv(here("rqs/data/version_options","version2.csv"), header = FALSE, sep = ",")
+compose_file_version2_features = as.data.frame(t(compose_file_version2_features))
+colnames(compose_file_version2_features) = c('feature')
+compose_file_version2_features$feature = trimws(compose_file_version2_features$feature)
+
+compose_file_version3_features =  read.csv(here("rqs/data/version_options","version3.csv"), header = FALSE, sep = ",")
+compose_file_version3_features = as.data.frame(t(compose_file_version3_features))
+colnames(compose_file_version3_features) = c('feature')
+compose_file_version3_features$feature = trimws(compose_file_version3_features$feature)
+
+unique_features_in_all_versions = unique(rbind(compose_file_version1_features, compose_file_version2_features, compose_file_version3_features))
+
+options_that_are_not_used = as.data.frame(setdiff(unique_features_in_all_versions$feature, unique(compose_file_features$feature)))
+colnames(options_that_are_not_used) = c("unused_options")
+unused_options_with_category = sqldf("select * from compose_feature_categories where Feature in (select unused_options from options_that_are_not_used)")
+
+
+# major revision : unused options by version
+options_that_are_not_used_v1 = as.data.frame(setdiff(compose_file_version1_features$feature, unique(compose_file_features[which(compose_file_features$version=="" | compose_file_features$version=="n"),]$feature)))
+nrow(options_that_are_not_used_v1)/nrow(compose_file_version1_features)
+
+options_that_are_not_used_v2 = as.data.frame(setdiff(compose_file_version2_features$feature, unique(compose_file_features[grep("^2",compose_file_features$version),]$feature)))
+nrow(options_that_are_not_used_v2)/nrow(compose_file_version2_features)
+
+options_that_are_not_used_v3 = as.data.frame(setdiff(compose_file_version3_features$feature, unique(compose_file_features[grep("^3",compose_file_features$version),]$feature)))
+nrow(options_that_are_not_used_v3)/nrow(compose_file_version3_features)
+
+

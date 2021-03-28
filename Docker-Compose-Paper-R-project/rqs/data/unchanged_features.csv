@@ -1,0 +1,8 @@
+"feature","supported_versions","Category"
+"bridge","3.0","Network Config"
+"cpu_quota","1.0,2.0","Resource Management"
+"enable_ipv6","2.0,3.0","Network Config"
+"endpoint_mode","3.0","Accessibility"
+"ipv6_address","2.0,3.0","Network Config"
+"overlay","3.0","Network Config"
+"update_config","3.0","Process Spec"

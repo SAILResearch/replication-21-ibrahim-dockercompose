@@ -1,0 +1,507 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(here, reshape, sqldf, splitstackshape, stringr, dplyr, DescTools)
+
+compose_evolution = read.csv(here("rqs/data","compose_project_evolution.csv"), header = TRUE, sep = ",")
+compose_evolution$owner_project = paste(compose_evolution$owner_id, compose_evolution$project_name, sep = "/")
+
+
+compose_evolution[is.na(compose_evolution$lines_inserted), ]$lines_inserted = 0
+compose_evolution[is.na(compose_evolution$lines_deleted), ]$lines_deleted = 0
+compose_evolution$total_change = compose_evolution$lines_deleted + compose_evolution$lines_inserted
+
+#remove unchanged commits
+compose_evolution = compose_evolution[compose_evolution$total_change > 0,]
+compose_evolution = unique(compose_evolution)
+
+
+##### Docker Compose files are revised infrequently.
+
+
+project_commits_count = sqldf("select owner_project, count(distinct commit_hash) as commit_count, compose_file_loc, 
+                  max(commit_date) as max_date, min(commit_date) as min_date
+                  from compose_evolution group by owner_project")
+
+print("Summary of commit count:")
+summary(project_commits_count$commit_count)
+
+
+compose_commit_count = sqldf("select owner_project, compose_file_path, count(distinct commit_hash) as commit_count  
+                             from compose_evolution group by owner_project, compose_file_path")
+compose_file_commits = data.frame(commit_count=numeric(), percentage=numeric())
+for (commit in seq(min(compose_commit_count$commit_count), max(compose_commit_count$commit_count))){
+  compose_file_commits = rbind(compose_file_commits, 
+                               data.frame(commit_count = commit, 
+                                          percentage = (nrow(compose_commit_count[compose_commit_count$commit_count >= commit,])/nrow(compose_commit_count)*100)))
+}
+
+
+ggplot(data=compose_file_commits, aes(x=commit_count, y=percentage, group=1)) +
+  geom_line()+
+  ylab("% of files CDF")+
+  xlab("# of commits")+
+  theme_bw()+
+  scale_x_continuous(trans="log1p", breaks = c(1,2,5,10,25,50,100))
+
+project_commits_count$revision_count = project_commits_count$commit_count - 1
+
+project_revisions = project_commits_count
+project_revisions$number_of_days = as.numeric(as.Date(as.character(project_revisions$max_date), format="%Y-%m-%d") - as.Date(as.character(project_revisions$min_date), format="%Y-%m-%d"))
+project_revisions[project_revisions$number_of_days == 0 & (project_revisions$max_date != project_revisions$min_date),]$number_of_days = 1
+
+
+# -1 to remove the first commit as we are considering only the revisions, not the initial commit
+project_revisions$revision_per_year = (project_revisions$commit_count-1) / ceiling((project_revisions$number_of_days/365))
+
+project_revisions[is.nan(project_revisions$revision_per_year) | is.infinite(project_revisions$revision_per_year) | is.na(project_revisions$revision_per_year),]$revision_per_year = 0
+project_revisions$rounded_revision_per_year = ceiling(project_revisions$revision_per_year)
+
+print("Summary of revision count per year:")
+summary(project_revisions$revision_per_year)
+
+revision_per_year = data.frame(revision=numeric(), percentage=numeric())
+
+
+for(revision in seq(min(project_revisions$rounded_revision_per_year), max(project_revisions$rounded_revision_per_year))){
+  revision_per_year = rbind(revision_per_year, 
+                            data.frame(revision = revision, 
+                                       percentage = (nrow(project_revisions[project_revisions$rounded_revision_per_year >= revision,])/nrow(project_revisions)*100)))
+}
+
+ggplot(data=revision_per_year, aes(x=revision, y=percentage, group=1)) +
+  geom_line()+
+  ylab("% of files CDF")+
+  xlab("# of revision per year")+
+  theme_bw()+
+  scale_x_continuous(trans = "log1p", breaks = c(0,1,5,10, 25, 50, 100))
+
+
+print("% of compose files that were never revised:")
+print(nrow(project_revisions[project_revisions$revision_count == 0,])/nrow(project_revisions)*100)
+
+print("% of compose files that were revised just once:")
+print(nrow(project_revisions[project_revisions$revision_count == 1,])/nrow(project_revisions)*100)
+
+print("correlation between the #loc and the #revisions:")
+cor.test(project_commits_count$compose_file_loc, project_commits_count$revision_count, method = c('spearman'))
+
+
+
+###### Docker Compose files exhibit small changes
+
+revisions = sqldf("select * from compose_evolution where owner_project in (select owner_project from compose_evolution group by owner_project having count(*) > 1) ")
+
+
+change = data.frame(lines=numeric(), percentage=numeric(), type=character())
+
+print("Summary of added number of lines of code:")
+summary(revisions$lines_inserted)
+
+print("Summary of deleted number of lines of code:")
+summary(revisions$lines_deleted)
+
+print("Summary of changed number of lines of code:")
+summary(revisions$total_change)
+
+for(lines_change in seq(0, max(revisions$total_change))){
+  change = rbind(change, data.frame(lines = lines_change, 
+                                    percentage = (nrow(revisions[revisions$lines_inserted >= lines_change,])/nrow(revisions)*100),
+                                    type="added"))
+  change = rbind(change, data.frame(lines = lines_change, 
+                                    percentage = (nrow(revisions[revisions$lines_deleted >= lines_change,])/nrow(revisions)*100),
+                                    type="removed"))
+  change = rbind(change, data.frame(lines = lines_change, 
+                                    percentage = (nrow(revisions[revisions$total_change >= lines_change,])/nrow(revisions)*100), 
+                                    type="total_change"))
+}
+
+
+ggplot(data=change, aes(x=lines, y=percentage))+
+  geom_line(aes(color = type))+
+  ylab("% of revisions CDF")+
+  xlab("# of lines of code")+
+  theme_bw()+
+  theme(legend.title = element_blank(), legend.position = "top", legend.spacing.x = unit(0.1, 'cm'), legend.text=element_text(size=10))+
+  scale_color_manual(values = c("green", "red", "#CCCC00"), labels = c("Added", "Removed", "Total change"))+
+  scale_x_continuous(trans = 'log1p', breaks = c(0, 1, 5, 10, 20, 40, 60))
+
+
+print("Correlation between size and the number of chnaged lines of code:")
+cor.test(compose_evolution$current_loc, compose_evolution$total_change, method = c('spearman'))
+
+medians = aggregate(total_change ~ current_loc, compose_evolution, median)
+colnames(medians) = c('current_loc','changed_loc')
+medians$line_type = "median"
+
+mins = aggregate(total_change ~ current_loc, compose_evolution, function(x) min(as.character(x)))
+colnames(mins) = c('current_loc','changed_loc')
+mins$line_type = "min"
+
+maxs = aggregate(total_change ~ current_loc, compose_evolution, function(x) max(as.character(x)))
+colnames(maxs) = c('current_loc','changed_loc')
+maxs$line_type = "max"
+
+total_change_vs_loc = rbind(medians, maxs, mins)
+total_change_vs_loc$current_loc = as.numeric(total_change_vs_loc$current_loc)
+total_change_vs_loc$changed_loc = as.numeric(total_change_vs_loc$changed_loc)
+
+ggplot(total_change_vs_loc, aes(x = current_loc, y = changed_loc, colour = line_type)) + 
+  geom_smooth(se = FALSE)+ theme_bw() + 
+  #scale_x_continuous("the x label") + 
+  scale_colour_discrete("")+
+  xlab("# of LOC")+
+  ylab("# of changed LOC")+
+  theme(legend.position = "top")
+
+
+##### Most of the studied changes are related to image and data management options
+
+docker_compose_evolution = read.csv(here("rqs/data","feature_changes_by_commit.csv"), header = TRUE, sep = ",")
+
+compose_feature_categories = read.csv(here("rqs/data","feature_categories.csv"), header = TRUE, sep = ",") 
+
+
+docker_compose_evolution = docker_compose_evolution[docker_compose_evolution$changed_feature != "", ]
+
+docker_compose_evolution$owner_project = paste(docker_compose_evolution$owner_id, docker_compose_evolution$project_name, sep = "/")
+
+feature_change_by_project = sqldf("select owner_id, project_name, changed_feature, count(*) as count from docker_compose_evolution group by owner_id, project_name, changed_feature")
+
+feature_change_by_project_count = sqldf("select changed_feature, count(distinct owner_project) as project_count 
+                                 from docker_compose_evolution group by changed_feature")
+
+number_of_projects = length(unique(docker_compose_evolution$owner_project))
+number_of_commits = nrow(unique(docker_compose_evolution[, c('commit_hash', 'owner_project')]))
+
+colnames(feature_change_by_project_count) = c('feature', 'count')
+feature_change_by_project_count$type = "% of projects"
+
+feature_change_by_commit_count = sqldf("select changed_feature, count(distinct commit_hash) as commit_count 
+                                 from docker_compose_evolution group by changed_feature")
+
+colnames(feature_change_by_commit_count) = c('feature', 'count')
+feature_change_by_commit_count$type = "% of revisions"
+
+feature_change_by_commit_count = feature_change_by_commit_count[order(-feature_change_by_commit_count$count),]
+
+top_commit_features = feature_change_by_commit_count[1:10,]
+top_commit_features_projects = feature_change_by_project_count[feature_change_by_project_count$feature %in% top_commit_features$feature,]
+
+
+top_commit_features$percentage = top_commit_features$count/number_of_commits*100
+top_commit_features_projects$percentage = top_commit_features_projects$count/number_of_projects*100
+
+top_commit_features$sort_order = top_commit_features$count*100
+top_commit_features_projects$sort_order = top_commit_features_projects$count
+
+feature_changes = rbind(top_commit_features, top_commit_features_projects)
+
+
+###### category and option frequencies ##########
+
+version1_features = read.csv(here("rqs/data/version_options","version1.csv"), header = FALSE, sep = ",")
+
+transposed_v1_features = as.data.frame(t(version1_features))
+colnames(transposed_v1_features) = c('feature')
+transposed_v1_features$version = 1
+
+version2_features = read.csv(here("rqs/data/version_options","version2.csv"), header = FALSE, sep = ",")
+
+transposed_v2_features = as.data.frame(t(version2_features))
+colnames(transposed_v2_features) = c('feature')
+transposed_v2_features$version = 2
+
+version3_features = read.csv(here("rqs/data/version_options","version3.csv"), header = FALSE, sep = ",")
+
+transposed_v3_features = as.data.frame(t(version3_features))
+colnames(transposed_v3_features) = c('feature')
+transposed_v3_features$version = 3
+
+all_features = as.data.frame(unique(rbind(transposed_v1_features, transposed_v2_features, transposed_v3_features)))
+all_features$feature = str_trim(all_features$feature)
+
+
+docker_compose_evolution = sqldf("select * from docker_compose_evolution where changed_feature in (select distinct feature from all_features)")
+
+docker_compose_evolution = sqldf("select docker_compose_evolution.*, compose_feature_categories.Category from docker_compose_evolution left outer join compose_feature_categories
+      on docker_compose_evolution.changed_feature = compose_feature_categories.Feature")
+
+
+unused_features = read.csv(here("rqs/data","unused_features.csv"), header = TRUE, sep = ",")
+
+unchanged_features = sqldf("select distinct feature from all_features where feature not in (select distinct changed_feature from docker_compose_evolution) and feature not in (select feature from unused_features)")
+
+unchanged_feature_with_supported_versions = sqldf("select unchanged_features.*, all_features.version from unchanged_features inner join all_features 
+                                                  on unchanged_features.feature = all_features.feature")
+
+unchanged_feature_with_supported_versions = sqldf("select feature, group_concat(version) as supported_versions from unchanged_feature_with_supported_versions group by feature")
+
+unchanged_feature_with_supported_versions_and_category = sqldf("select unchanged_feature_with_supported_versions.*, compose_feature_categories.Category 
+from unchanged_feature_with_supported_versions left outer join compose_feature_categories
+      on unchanged_feature_with_supported_versions.feature = compose_feature_categories.Feature")
+
+write.csv(unchanged_feature_with_supported_versions_and_category, file=here("rqs/data","unchanged_features.csv"), row.names=FALSE)
+
+
+category_change_by_project = sqldf("select owner_id, project_name, Category, count(*) as count from docker_compose_evolution group by owner_id, project_name, category")
+
+category_change_by_project_count = sqldf("select Category, count(distinct owner_project) as project_count 
+                                         from docker_compose_evolution group by Category")
+
+number_of_projects = length(unique(docker_compose_evolution$owner_project))
+number_of_commits = nrow(unique(docker_compose_evolution[, c('commit_hash', 'owner_project')]))
+
+colnames(category_change_by_project_count) = c('category', 'count')
+category_change_by_project_count$type = "% of relevant projects"
+
+category_change_by_commit_count = sqldf("select Category, count(distinct commit_hash) as commit_count 
+                                        from docker_compose_evolution group by Category")
+
+colnames(category_change_by_commit_count) = c('category', 'count')
+category_change_by_commit_count$type = "% of revisions"
+
+category_change_by_commit_count = category_change_by_commit_count[order(-category_change_by_commit_count$count),]
+
+top_commit_categories = category_change_by_commit_count
+top_commit_categories_projects = category_change_by_project_count
+
+
+#Note: need to run the rq2.R file first for the following analysis to work
+
+top_commit_categories_projects = sqldf("select top_commit_categories_projects.*, feature_category_count_by_project.count as relevant_project_count 
+      from top_commit_categories_projects left outer join feature_category_count_by_project
+      on top_commit_categories_projects.category = feature_category_count_by_project.Category")
+
+top_commit_categories$percentage = top_commit_categories$count/number_of_commits*100
+top_commit_categories_projects$percentage = top_commit_categories_projects$count/top_commit_categories_projects$relevant_project_count*100
+top_commit_categories_projects$relevant_project_count = NULL
+
+top_commit_categories$sort_order = top_commit_categories$count*100
+top_commit_categories_projects$sort_order = top_commit_categories_projects$count
+
+ggplot(top_commit_categories, aes(category, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(category, sort_order), ymin = 0, ymax = percentage), 
+                 position = position_dodge(width = 1))+
+  geom_point(aes(x = category, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", position = position_dodge(width = 1), inherit.aes = TRUE)+
+  coord_flip()+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.title=element_blank(), legend.position = "none", legend.text=element_text(size=10), legend.spacing.x = unit(0.05, 'cm'))+
+  guides(fill=guide_legend(
+    keywidth=0.15,
+    keyheight=0.15,
+    default.unit="inch"))+
+  xlab("")+
+  ylab("% of revisions")+
+  scale_y_continuous(limits = c(0,40))
+
+ggplot(top_commit_categories_projects, aes(category, percentage, label = sprintf("%.1f%%", percentage)))+
+  geom_linerange(aes(x=reorder(category, percentage), ymin = 0, ymax = percentage), 
+                 position = position_dodge(width = 1))+
+  geom_point(aes(x = category, y = percentage),
+             position = position_dodge(width = 1))+
+  geom_text(size=3.2, hjust=-0.25, color="black", position = position_dodge(width = 1), inherit.aes = TRUE)+
+  coord_flip()+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.title=element_blank(), legend.position = "none", legend.text=element_text(size=10), legend.spacing.x = unit(0.05, 'cm'))+
+  guides(fill=guide_legend(
+    keywidth=0.15,
+    keyheight=0.15,
+    default.unit="inch"))+
+  xlab("")+
+  ylab("% of relevant projects")+
+  scale_y_continuous(limits = c(0,70))
+
+
+
+##### Applications are made more stable by pining the versions of theused images
+
+image_changes_by_commit = read.csv(file = here("rqs/data","image_changes_by_commit.csv"), header =
+                                     TRUE, sep = ",")
+
+compose_project_evolution =  read.csv(here("rqs/data","compose_project_evolution.csv"), header = TRUE, sep = ",")
+
+compose_projects = read.csv(file = here("rqs/data","root_compose_projects.csv"), header =
+                              TRUE, sep = ",")
+
+#get the commit message
+image_changes_by_commit_and_messages = sqldf("select image_changes_by_commit.*, compose_project_evolution.commit_subject 
+      from image_changes_by_commit left outer join compose_project_evolution
+      on image_changes_by_commit.commit_hash = compose_project_evolution.commit_hash")
+
+image_changes_by_commit_and_messages = unique(image_changes_by_commit_and_messages)
+
+
+#get the project url
+image_changes_by_commit_messages_and_url = sqldf("select image_changes_by_commit_and_messages.*, compose_projects.url
+      from image_changes_by_commit_and_messages left outer join compose_projects
+      on image_changes_by_commit_and_messages.owner_id = compose_projects.owner_id
+      AND image_changes_by_commit_and_messages.project_name = compose_projects.name")
+
+image_changes_by_commit_messages_and_url$old_tag = ""
+image_changes_by_commit_messages_and_url$new_tag = ""
+
+for(row in 1:nrow(image_changes_by_commit_messages_and_url)){
+  splits = unlist(strsplit(as.character(image_changes_by_commit_messages_and_url[row,'old_val']), ":"))
+  if(length(splits) > 1){
+    image_changes_by_commit_messages_and_url[row,'old_tag'] = splits[2]
+  }
+  
+  splits = unlist(strsplit(as.character(image_changes_by_commit_messages_and_url[row,'new_val']), ":"))
+  if(length(splits) > 1){
+    image_changes_by_commit_messages_and_url[row, 'new_tag'] = splits[2]
+  }
+}
+
+changed_tags = image_changes_by_commit_messages_and_url[image_changes_by_commit_messages_and_url$old_tag != "" & image_changes_by_commit_messages_and_url$new_tag != "" & image_changes_by_commit_messages_and_url$old_tag != image_changes_by_commit_messages_and_url$new_tag ,]
+print("version changed:")
+print((nrow(changed_tags)/nrow(image_changes_by_commit_messages_and_url)*100))
+
+version_added = image_changes_by_commit_messages_and_url[image_changes_by_commit_messages_and_url$old_tag == "" & image_changes_by_commit_messages_and_url$new_tag != "",]
+print("version added:")
+print((nrow(version_added)/nrow(image_changes_by_commit_messages_and_url)*100))
+
+version_removed = image_changes_by_commit_messages_and_url[image_changes_by_commit_messages_and_url$old_tag != "" & image_changes_by_commit_messages_and_url$new_tag == "",]
+print("version removed:")
+print((nrow(version_removed)/nrow(image_changes_by_commit_messages_and_url)*100))
+
+image_change_types = data.frame(version_changed = nrow(changed_tags)/nrow(image_changes_by_commit_messages_and_url)*100, 
+                                version_added = nrow(version_added)/nrow(image_changes_by_commit_messages_and_url)*100,
+                                version_remvoed = nrow(version_removed)/nrow(image_changes_by_commit_messages_and_url)*100)
+
+image_change_types$image_removed = 100 - (image_change_types$version_changed + image_change_types$version_added + image_change_types$version_remvoed)
+
+image_change_types = as.data.frame(t(image_change_types))
+
+
+image_change_types = tibble::rownames_to_column(image_change_types, "change_types")
+colnames(image_change_types) = c('change_types', 'percentage')
+
+
+# original chart is here: https://docs.google.com/spreadsheets/d/1xPyeAi9xvroHJG0027BWkv4HSvnJlLjCzA3GMttBCd8/edit?usp=sharing
+ggplot(image_change_types, aes("", percentage, fill = change_types)) +
+  geom_bar(width = 0.5, size = 1, color = "gray", stat = "identity") +
+  coord_polar("y") +
+  geom_text(aes(label = sprintf("%.1f%%", percentage)),
+            position = position_stack(vjust = 0.5), size=3) +
+  labs(x = NULL, y = NULL, fill = NULL) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  scale_fill_manual(values = c("white", "white", "white", "white")) +
+  theme_minimal() +
+  theme(axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position ="none",
+        legend.key.size = unit(1.1, "cm"))
+
+
+##### The volumes option is the second most frequently changed option
+
+volumes_feature_evolution = docker_compose_evolution[docker_compose_evolution$changed_feature == "volumes",]
+
+volumes_feature_evolution$type = ""
+volumes_feature_evolution[grepl("add", volumes_feature_evolution$status), c('type')] = "Added"
+volumes_feature_evolution[grepl("remove", volumes_feature_evolution$status), c('type')] = "Removed"
+volumes_feature_evolution[grepl("change", volumes_feature_evolution$status), c('type')] = "Value changed"
+
+volumes_feature_evolution_count = sqldf("select changed_feature, type, count(*) as commit_count from volumes_feature_evolution group by changed_feature, type")
+volumes_feature_evolution_count$percentage = volumes_feature_evolution_count$commit_count/sum(volumes_feature_evolution_count$commit_count)*100
+
+View(volumes_feature_evolution_count)
+
+##### Docker Compose files are coupled with other files that are often used to configure the infrastructure of an application as well
+
+print("Summary of number of files changed in a Docker Compose revision:")
+summary(revisions$total_file_changed)
+
+print("% of revisions that changed at least one other file with the docker-compose.yml file:")
+print(nrow(revisions[revisions$total_file_changed > 1,])/nrow(revisions)*100)
+
+revisions$changed_files = gsub("docker-compose.yml,", "", revisions$changed_files)
+revisions$changed_files = gsub("docker-compose.yml", "", revisions$changed_files)
+
+# print(nrow(revisions[grep("dockerfile", revisions$changed_files, ignore.case=TRUE),])/nrow(revisions)*100)
+
+co_evolution = data.frame(project = character(), commit_hash = character(), compose_file = character(), other_file = character())
+
+for(i in 1:nrow(revisions)){
+  files = as.character(revisions[i,]$changed_files)
+  other_files = unlist(strsplit(files, ','))
+  project = paste(revisions[i,]$owner_id, revisions[i,]$project_name, sep = "/")
+  
+  if(length(other_files) == 0){
+    co_evolution = rbind(co_evolution, data.frame(project = project, commit_hash = revisions[i,]$commit_hash, compose_file = "docker-compose", other_file = "docker-compose")) 
+  }else{
+    files_extensions = c() 
+    for(k in 1:length(other_files)){
+      file_name_splits = unlist(strsplit(other_files[k], "\\."))
+      files_extensions = c(files_extensions, tolower(file_name_splits[length(file_name_splits)]))
+    }
+    
+    files_extensions = unique(files_extensions)
+    
+    for(j in 1:length(files_extensions)){
+      if(files_extensions[j] != "" & !is.na(files_extensions[j])){
+        co_evolution = rbind(co_evolution, data.frame(project = project, commit_hash = revisions[i,]$commit_hash, compose_file="docker-compose", other_file = files_extensions[j]))
+      }
+    }
+    
+  }
+  
+  print(sprintf("%s of %s", i, nrow(revisions)))
+}
+
+only_compose_file_changed = co_evolution[co_evolution$other_file == 'docker-compose',]
+print("only docker-compose file is modified")
+print(nrow(only_compose_file_changed)/length(unique(co_evolution$commit_hash))*100)
+
+co_evolution = co_evolution[co_evolution$other_file != 'docker-compose',]
+co_evolution$other_file = as.character(co_evolution$other_file)
+co_evolution[is.na(co_evolution$other_file),c('other_file')] = "none"
+
+#write.csv(co_evolution, "~/docker-compose-script/data/file_co_evolution.csv", row.names = FALSE)
+co_occurance = sqldf("select project, other_file, count(other_file) as count from co_evolution group by project, other_file")
+
+other_file_count = sqldf("select other_file, sum(count) as count from co_occurance group by other_file")
+number_of_revisions = length(unique(co_evolution$commit_hash))
+
+other_file_count$ratio = other_file_count$count/number_of_revisions*100
+other_file_count = other_file_count[order(-other_file_count$count),]
+
+ggplot(other_file_count[1:5,]
+       , aes(other_file, ratio, label = sprintf("%.1f%%", ratio)))+
+  geom_linerange(aes(x=reorder(other_file, ratio), ymin = 0, ymax = ratio))+
+  geom_point(aes(x = other_file, y = ratio))+
+  geom_text(size=3.2, hjust=-0.25, color="black", inherit.aes = TRUE)+
+  coord_flip()+
+  xlab("")+
+  ylab("% of revisions changing more than one file")+
+  theme_test()+
+  theme(axis.text=element_text(size=10),
+        axis.title=element_text(size=10),
+        axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        legend.position = "none")+
+  ylim(c(0,45))
+
+
+# Major revision: studying the co-evolution in depth
+dockerfile_co_change<-co_evolution[which(co_evolution$other_file=='dockerfile'),]
+samp_idx <- sample(seq_len(nrow(dockerfile_co_change)), 40)
+
+#write.csv(dockerfile_co_change[samp_idx,], "Manual_analysis/Rq3/co_change_dockerfile.csv")
+
+
+
+
