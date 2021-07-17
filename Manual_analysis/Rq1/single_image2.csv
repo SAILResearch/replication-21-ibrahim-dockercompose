@@ -1,0 +1,285 @@
+url,owner_id,project_name,image_count,
+https://api.github.com/repos/circleci/frontend,84389,frontend,1,Make it easy for contributors to setup
+https://api.github.com/repos/hawkular/hawkular-alerts,6648535,hawkular-alerts,1,
+https://api.github.com/repos/gmr/consulate,140928,consulate,1,
+https://api.github.com/repos/stefannaglee/docker-registry-manager,6948988,docker-registry-manager,1,They provide different mechanisms including docker-compose and docker to run their applicatoin
+https://api.github.com/repos/ypereirareis/ypereirareis.github.io,3504450,ypereirareis.github.io,1,
+https://api.github.com/repos/hhpack/performance,10101916,performance,1,
+https://api.github.com/repos/ryerh/ryerh.github.io,2838502,ryerh.github.io,1,
+https://api.github.com/repos/mattherman/MbDotNet,6899782,MbDotNet,1,use docker-compose `` to bring up […] container''
+https://api.github.com/repos/mangrep/ifsc-rest-api,10225701,ifsc-rest-api,1,
+https://api.github.com/repos/lsu-ub-uu/cora-therest,10266959,cora-therest,1,To simplify the creation and the stop of images. A good example is shown in a commit https://github.com/lsu-ub-uu/cora-therest/commit/a5e6af650710a6b082f060ab759fe13bd8f1ab42#diff-423deb13b7c401b1a7f41ee91c77f722e11d2f317d6a66b546524e8a04cc8b03
+https://api.github.com/repos/czechboy0/Redbird,1573127,Redbird,1,add docker compose for testing
+https://api.github.com/repos/smartystreets/smartystreets-java-sdk,55453,smartystreets-java-sdk,1,
+https://api.github.com/repos/visionappscz/synergic-ui,5069564,synergic-ui,1,
+https://api.github.com/repos/pseudomuto/dotfiles,2148154,dotfiles,1,
+https://api.github.com/repos/batandwa/just-the-video,960998,just-the-video,1,
+https://api.github.com/repos/policygenius/athenaeum,3197792,athenaeum,1,
+https://api.github.com/repos/luismayta/resume,21051,resume,1,
+https://api.github.com/repos/jterral/grim-app,10085246,grim-app,1,
+https://api.github.com/repos/OSSHealth/ghdata,32925466,ghdata,1,
+https://api.github.com/repos/monitoringartist/grafana-xxl,8730042,grafana-xxl,1,
+https://api.github.com/repos/bitrise-docker/android-ndk,10373931,android-ndk,1,"""A docker-compose.yml is also included, configured for quick testing."""
+https://api.github.com/repos/lambci/lambci,8215363,lambci,1,"""Move to Docker compose for better reproducability"". Instead of runing this command: ""docker build -t lambci/lambci -f ../Dockerfile docker"", you run just this one "" docker-compose build"""
+https://api.github.com/repos/mobileek/mobileek.github.io,11836795,mobileek.github.io,1,"Simplifying the construction of docker. Instead of executing this command ""docker run --rm --label=jekyll -v ""$(pwd)"":/srv/jekyll  -it -p 4000:4000 jekyll/jekyll jekyll --config _config.dev.yml serve --watch --incremental"", they codified everything inside docker-compose file "
+https://api.github.com/repos/ThoughtWorksTurkey/marketwatcher.io,13317662,marketwatcher.io,1,
+https://api.github.com/repos/WeAreFrancis/auth-service,34654777,auth-service,1,
+https://api.github.com/repos/kaisalmen/WWOBJLoader,30570643,WWOBJLoader,1,"""If you have docker & docker-compose available there is no need to install any software stacks"""
+https://api.github.com/repos/adaptive-learning/proso-apps,5970145,proso-apps,1,
+https://api.github.com/repos/Illedan/PartyfyYou,1765415,PartyfyYou,1,
+https://api.github.com/repos/ytakano/lunarlang,554997,lunarlang,1,
+https://api.github.com/repos/kennethreitz/pipenv,796,pipenv,1,they use docker-compose just for test. So in a makefile they just invoke docker-compose build and docker-compose up for the testing
+https://api.github.com/repos/faithworkcamps/faithworkcamps.github.io,37337837,faithworkcamps.github.io,1,Docker quick start
+https://api.github.com/repos/SlaxWeb/Framework,6296273,Framework,1,"Not clear why, but it seems that the only advantage here is to specify the volumes"
+https://api.github.com/repos/popcodeorg/popcode,10369230,popcode,1,
+https://api.github.com/repos/danilnagy/discover,1822631,discover,1,
+https://api.github.com/repos/OSUOSC/open-source-club-website,782019,open-source-club-website,1,
+https://api.github.com/repos/hhpack/package,10101916,package,1,
+https://api.github.com/repos/a25kk/eda,5715828,eda,1,
+https://api.github.com/repos/facebook/FBSimulatorControl,2156,FBSimulatorControl,1,
+https://api.github.com/repos/supergiant/supergiant,12301919,supergiant,1,
+https://api.github.com/repos/gperreymond/node-cqrs-framework,1285570,node-cqrs-framework,1,"docker-compose is ued for test. To run test, they just call ""docker-compose up"" from ""package.json"""
+https://api.github.com/repos/gfw-api/gfw-story-api,12231302,gfw-story-api,1,
+https://api.github.com/repos/awentzonline/doppelchat,2403091,doppelchat,1,
+https://api.github.com/repos/gyng/jsapp-boilerplate,2398213,jsapp-boilerplate,1,
+https://api.github.com/repos/niiknow/docker-nginx-image-proxy,7709826,docker-nginx-image-proxy,1,
+https://api.github.com/repos/Censys/censys-definitions,9646293,censys-definitions,1,
+https://api.github.com/repos/TranscribeToTEI/webapp,37152591,webapp,1,
+https://api.github.com/repos/taylor-peterson/taylor-peterson.github.io,3371251,taylor-peterson.github.io,1,"""Add docker-compose.yml file to support local development"""
+https://api.github.com/repos/maxcanna/homeautomation,27638,homeautomation,1,An option ``to get homeautomation running'' instead of doing it manually
+https://api.github.com/repos/sameersbn/docker-redis,1343504,docker-redis,1,"Simplify the command to start. Run ""docker-compose up"" instead of ""docker run --name redis -d --restart=always  --publish 6379:6379 --volume /srv/docker/redis:/var/lib/redis sameersbn/redis:4.0.9-2"""
+https://api.github.com/repos/pubkey-sh/pubkey.sh,12333688,pubkey.sh,1,"""make the switch to docker for environment management"""
+https://api.github.com/repos/SpamScope/spamscope,30725490,spamscope,1,"to make it ""easy to setup: there are docker images and docker-compose ready for use."""
+https://api.github.com/repos/ponylang/pony-stable,8566019,pony-stable,1,
+https://api.github.com/repos/zixia/docker-simple-mail-forwarder,281709,docker-simple-mail-forwarder,1,"this project build an image for sending emails, the image is deployed on dockerhub. To test the image, they need to specify a certain environment variables. Instead of doing that on a command line, they have a docker-compose to easily declare these environement variables. On top of that, they use the compose for easier deployment"
+https://api.github.com/repos/majori/piikki,8471616,piikki,1,
+https://api.github.com/repos/graze/golang-service,896871,golang-service,1,
+https://api.github.com/repos/PHeonix25/PHeonix25.github.io,449158,PHeonix25.github.io,1,They use an image from dockerhub and tweak it with a specific command
+https://api.github.com/repos/SvenDowideit/dockerfiles,22217,dockerfiles,1,
+https://api.github.com/repos/mvs-live/metaverse,33484718,metaverse,1,
+https://api.github.com/repos/CTS-NL/CTS-NL.github.io,6449969,CTS-NL.github.io,1,"A simple way to start the webiste ""If you want to start the site with docker compose"". The compose uses an existing image, and start it with a long command, which might not be trivial when using just a command line?"
+https://api.github.com/repos/mrllama123/nwen304-project3-team-sweet,8972773,nwen304-project3-team-sweet,1,"``added a docker compose for [easier] development"". To run the databse, you need to simply run ""docker-compose up"". To stop the datbase, you need to simply run ""docker-compose down"""
+https://api.github.com/repos/circleci/circleci-docs,84389,circleci-docs,1,they add support to docker-compose
+https://api.github.com/repos/keboola/sklik-extractor,7113,sklik-extractor,1,It's used to setup the environment and to run  test suit
+https://api.github.com/repos/charlie59/non-texas-2,6306955,non-texas-2,1,
+https://api.github.com/repos/tobegit3hub/seagull,1822124,seagull,1,"For easy installation. Either run ""docker run -d -p 10086:10086 -v /var/run/docker.sock:/var/run/docker.sock tobegit3hub/seagull"" or just ""docker-compose up -d ."""
+https://api.github.com/repos/ElderByte-/ngx-jwt-auth,7973188,ngx-jwt-auth,1,
+https://api.github.com/repos/devopspatterns/devopspatterns.github.io,38267878,devopspatterns.github.io,1,
+https://api.github.com/repos/sinnerschrader/patternplate,400993,patternplate,1,
+https://api.github.com/repos/savoirfairelinux/num2words,1116987,num2words,1,
+https://api.github.com/repos/TulevaEE/epis-service,33246369,epis-service,1,
+https://api.github.com/repos/itJunky/web-tasker.py,922910,web-tasker.py,1,
+https://api.github.com/repos/dongri/line-bot-sdk-go,1875259,line-bot-sdk-go,1,"When they supported docker, they added dockerfile and docker-compose"
+https://api.github.com/repos/VonC/b2d,226677,b2d,1,
+https://api.github.com/repos/slidewiki/nlp-service,11122400,nlp-service,1,
+https://api.github.com/repos/mattdavis90/base10,1988038,base10,1,They use an image from dockerhub (their own image) and change certain environment variables
+https://api.github.com/repos/cahirwpz/wifire-os,33240,wifire-os,1,
+https://api.github.com/repos/wolvespack/alcor,38714324,alcor,1,
+https://api.github.com/repos/TulevaEE/onboarding-service,33246369,onboarding-service,1,"They use an official image, which they tweak by changing the port and adding certain environment variables"
+https://api.github.com/repos/hypery2k/galenframework-cli,42858,galenframework-cli,1,
+https://api.github.com/repos/rolobio/pgpydict,568658,pgpydict,1,
+https://api.github.com/repos/a25kk/dhp,5715828,dhp,1,
+https://api.github.com/repos/joaothallis/joaothallis.github.io,33734958,joaothallis.github.io,1,
+https://api.github.com/repos/Tournia/tournia-site,7228835,tournia-site,1,
+https://api.github.com/repos/kovarp/hellofront,7785382,hellofront,1,
+https://api.github.com/repos/fosojs/cdn,8613861,cdn,1,
+https://api.github.com/repos/zuzucheFE/guido,34881921,guido,1,
+https://api.github.com/repos/dyzhxsl3897/goliveiptv,2003100,goliveiptv,1,
+https://api.github.com/repos/TeamHypersomnia/Hypersomnia,15965949,Hypersomnia,1,
+https://api.github.com/repos/bird-house/flyingpigeon,5098869,flyingpigeon,1,
+https://api.github.com/repos/sketch7/ssv-au-ui-dojo,11426960,ssv-au-ui-dojo,1,
+https://api.github.com/repos/smartystreets/smartystreets-php-sdk,55453,smartystreets-php-sdk,1,"An example of how difficult it is to understand the goal of adding docker-compose. They just indicate in the commit message the following: ""Added docker-compose.yml."""
+https://api.github.com/repos/buildkite-plugins/s3-secrets-buildkite-plugin,16167054,s3-secrets-buildkite-plugin,1,The compose is used for testing
+https://api.github.com/repos/ClouDesire/janine,2823763,janine,1,They use a dockerhub image and change its port
+https://api.github.com/repos/nickrttn/watt-next,5406036,watt-next,1,"""added docker-compose.yml for easy MongoDB development"""
+https://api.github.com/repos/evernym/sovrin-client-rust,6217561,sovrin-client-rust,1,
+https://api.github.com/repos/IDCI-Consulting/NotificationApiClientBundle,393551,NotificationApiClientBundle,1,
+https://api.github.com/repos/lovasoa/whitebophir,765421,whitebophir,1,
+https://api.github.com/repos/nituchao/nituchao.com,901972,nituchao.com,1,
+https://api.github.com/repos/tctc91/angular2-wordpress-portfolio,1541313,angular2-wordpress-portfolio,1,"""Provide docker deployment support for separate environments"""
+https://api.github.com/repos/hackerspace-silesia/HackSilesia,1992459,HackSilesia,1,"""Docker support added"""
+https://api.github.com/repos/andersfugmann/aws-s3,342729,aws-s3,1,
+https://api.github.com/repos/buluba89/Yatcobot,1646745,Yatcobot,1,
+https://api.github.com/repos/resource-watch/preparedness-for-resilience,12667555,preparedness-for-resilience,1,
+https://api.github.com/repos/martinroob/ngx-i18nsupport,14107489,ngx-i18nsupport,1,
+https://api.github.com/repos/percy/percy-web,8036548,percy-web,1,
+https://api.github.com/repos/moneyadviceservice/dough,2074937,dough,1,
+https://api.github.com/repos/niiknow/moonship,7709826,moonship,1,
+https://api.github.com/repos/dexternidia/redcomand,38726610,redcomand,1,
+https://api.github.com/repos/TheAngryByrd/Marten.FSharp,16006,Marten.FSharp,1,
+https://api.github.com/repos/buildkite-plugins/docker-compose-buildkite-plugin,16167054,docker-compose-buildkite-plugin,1,
+https://api.github.com/repos/tooleks/shevchenko-js,6790478,shevchenko-js,1,
+https://api.github.com/repos/facebook/mention-bot,2156,mention-bot,1,to set up an environment and quickly execute a project locally
+https://api.github.com/repos/ilyaglow/cortex-tgbot,10467865,cortex-tgbot,1,
+https://api.github.com/repos/nmaggioni/Dumpster,6239387,Dumpster,1,
+https://api.github.com/repos/mvs-org/metaverse,36836030,metaverse,1,
+https://api.github.com/repos/nemundo/framework,15255447,framework,1,
+https://api.github.com/repos/fourctv/vakeano,11497099,vakeano,1,
+https://api.github.com/repos/nodesource/docker-nsolid,4646599,docker-nsolid,1,
+https://api.github.com/repos/pcp-on-web/project-website,35464945,project-website,1,
+https://api.github.com/repos/mikemix/seo-farm,1088631,seo-farm,1,
+https://api.github.com/repos/googleads/google-ads-php,2390496,google-ads-php,1,
+https://api.github.com/repos/semanticbits/owh-ds,8651112,owh-ds,1,
+https://api.github.com/repos/sameersbn/docker-bind,1343504,docker-bind,1,codify all the command line parameters of the dockerfile
+https://api.github.com/repos/eKiosk/HardwareSensorSystem,31175250,HardwareSensorSystem,1,
+https://api.github.com/repos/Frojd/django-react-templatetags,174540,django-react-templatetags,1,
+https://api.github.com/repos/ipfs/java-ipfs-api,7338375,java-ipfs-api,1,quickly execute a project
+https://api.github.com/repos/setyassida/econtractview,10161913,econtractview,1,
+https://api.github.com/repos/HTTP-APIs/hydrus,32908295,hydrus,1,
+https://api.github.com/repos/andygrunwald/FOM-LaTeX-Template,9190,FOM-LaTeX-Template,1,
+https://api.github.com/repos/inonit/drf-haystack,966123,drf-haystack,1,
+https://api.github.com/repos/sysgears/apollo-fullstack-starter-kit,1378862,apollo-fullstack-starter-kit,1,
+https://api.github.com/repos/Korilakkuma/XSound,1976843,XSound,1,
+https://api.github.com/repos/monty5811/apostello,2946236,apostello,1,
+https://api.github.com/repos/GEverding/touchVision,339142,touchVision,1,
+https://api.github.com/repos/Turistforeningen/node-s3-uploader,150350,node-s3-uploader,1,to set up a dev environment 
+https://api.github.com/repos/SISS/sissvoc,5457096,sissvoc,1,
+https://api.github.com/repos/strarsis/sass-include-paths,8422389,sass-include-paths,1,"to create a test environment, even if they just call ruby from docker-compose"
+https://api.github.com/repos/bahrmichael/eve-pos-taxer,3998194,eve-pos-taxer,1,
+https://api.github.com/repos/publiclab/plotsbot,2064545,plotsbot,1,
+https://api.github.com/repos/slidewiki/Deck-Service,11122400,Deck-Service,1,to easily set up an environment 
+https://api.github.com/repos/fastmonkeys/respa-ui,944746,respa-ui,1,
+https://api.github.com/repos/Cobliteam/shelver,31368986,shelver,1,To set up a test env. 
+https://api.github.com/repos/revathskumar/blog.revathskumar.com,115759,blog.revathskumar.com,1,
+https://api.github.com/repos/nerab/plaintweet,7696,plaintweet,1,
+https://api.github.com/repos/sameersbn/docker-wowza,1343504,docker-wowza,1,codify all the command line parameters of the dockerfile
+https://api.github.com/repos/docsocsf/sponsor-portal,36564013,sponsor-portal,1,
+https://api.github.com/repos/bitrise-docker/bitrise-base,10373931,bitrise-base,1,quick testing
+https://api.github.com/repos/waiting-for-dev/warden-jwt_auth,3320291,warden-jwt_auth,1,
+https://api.github.com/repos/PromoFaux/Matterhook.NET,7174562,Matterhook.NET,1,
+https://api.github.com/repos/baberutv/baberutv,32070822,baberutv,1,
+https://api.github.com/repos/TBeeckmans/bht,2583647,bht,1,
+https://api.github.com/repos/nils-wisiol/pypuf,710268,pypuf,1,
+https://api.github.com/repos/oxarbitrage/bitshares-python-api-backend,30791080,bitshares-python-api-backend,1,
+https://api.github.com/repos/prometheus/mysqld_exporter,962232,mysqld_exporter,1,
+https://api.github.com/repos/bitrise-io/steps-gradle-runner,4577598,steps-gradle-runner,1,easier testing
+https://api.github.com/repos/datacite/homepage,301703,homepage,1,
+https://api.github.com/repos/flipstone/orville,388044,orville,1,
+https://api.github.com/repos/Socialsquare/dr-bybilleder,6882463,dr-bybilleder,1,
+https://api.github.com/repos/ShelterTechSF/askdarcel-web,11930530,askdarcel-web,1,
+https://api.github.com/repos/iigkid/jekyll-mexpro,12353132,jekyll-mexpro,1,
+https://api.github.com/repos/M6Web/AmqpBundle,1252632,AmqpBundle,1,
+https://api.github.com/repos/zouzias/spark-lucenerdd-examples,1284461,spark-lucenerdd-examples,1,
+https://api.github.com/repos/pedroamador/jenkins-pipeline-library,1268897,jenkins-pipeline-library,1,for test
+https://api.github.com/repos/Shyam-Chen/Web-Starter-Kit,8713085,Web-Starter-Kit,1,
+https://api.github.com/repos/thombergs/coderadar,1284676,coderadar,1,they mentoin that the use of docker-compose is for easy startup
+https://api.github.com/repos/colinsheppard/beam,60260,beam,1,
+https://api.github.com/repos/IDI-Systems/acre2,6750433,acre2,1,
+https://api.github.com/repos/phisikus/plotka,1728673,plotka,1,
+https://api.github.com/repos/AlbanMontaigu/docker-toolbox,5999757,docker-toolbox,1,
+https://api.github.com/repos/dkfbasel/vuex-i18n,30485493,vuex-i18n,1,
+https://api.github.com/repos/netsil/manifests,11272731,manifests,1,
+https://api.github.com/repos/jrgp/linfo,895715,linfo,1,easy setup
+https://api.github.com/repos/AncientMariner/ChessBoard,214381,ChessBoard,1,
+https://api.github.com/repos/sr/ansible-playbook-dev,1567,ansible-playbook-dev,1,
+https://api.github.com/repos/fastlane/ci,7475195,ci,1,
+https://api.github.com/repos/darkleaf/router,103751,router,1,
+https://api.github.com/repos/jgthms/bulma,143478,bulma,1,
+https://api.github.com/repos/saghul/CallRoulette,992,CallRoulette,1,
+https://api.github.com/repos/Yleisradio/rabid,2678690,rabid,1,
+https://api.github.com/repos/tinuF/eTuneBook2,8737871,eTuneBook2,1,
+https://api.github.com/repos/lowsideio/web-frontend,37719319,web-frontend,1,
+https://api.github.com/repos/Taig/Scala-on-Android,458826,Scala-on-Android,1,
+https://api.github.com/repos/IcaliaLabs/alom,1242962,alom,1,
+https://api.github.com/repos/erikbern/git-of-theseus,802070,git-of-theseus,1,
+https://api.github.com/repos/gansoi/gansoi,33164913,gansoi,1,
+https://api.github.com/repos/aviabird/angularspree,31201582,angularspree,1,
+https://api.github.com/repos/medialab-ufg/wp-rhs,35228900,wp-rhs,1,to quickly start the dev server
+https://api.github.com/repos/zooniverse/Panoptes-Front-End,187217,Panoptes-Front-End,1,
+https://api.github.com/repos/PiTeam/garage-pi,10981646,garage-pi,1,
+https://api.github.com/repos/elongeau/bank-account,739525,bank-account,1,
+https://api.github.com/repos/sherylynn/plugins4rmmv,469961,plugins4rmmv,1,
+https://api.github.com/repos/atomic-squirrel/atomic-squirrel-homepage,9151641,atomic-squirrel-homepage,1,
+https://api.github.com/repos/nie-ine/raeber-website,31931354,raeber-website,1,
+https://api.github.com/repos/BitSharesEurope/wallet.bitshares.eu,8301716,wallet.bitshares.eu,1,
+https://api.github.com/repos/aarmour/my-denver,90456,my-denver,1,
+https://api.github.com/repos/rchatterjee/typtopcpp,4269955,typtopcpp,1,
+https://api.github.com/repos/blockbridge/blockbridge-docker-volume,8512099,blockbridge-docker-volume,1,
+https://api.github.com/repos/molgor/spystats,2936334,spystats,1,
+https://api.github.com/repos/el-bart/mini,362428,mini,1,to make things simple!
+https://api.github.com/repos/juanelojga/loopback3-connector-couchbase,7217705,loopback3-connector-couchbase,1,
+https://api.github.com/repos/dalraf/iap,700472,iap,1,
+https://api.github.com/repos/carbonblack/cb-integration,2459595,cb-integration,1,
+https://api.github.com/repos/MadeInHaus/react-flux-gulp-starter,141448,react-flux-gulp-starter,1,
+https://api.github.com/repos/kuhnuri/kuhnuri-worker,35339268,kuhnuri-worker,1,
+https://api.github.com/repos/AbenezerMamo/crypto-signal,9210867,crypto-signal,1,
+https://api.github.com/repos/mylittletony/ct-frontend,37884335,ct-frontend,1,
+https://api.github.com/repos/HouzuoGuo/tiedot,107312,tiedot,1,
+https://api.github.com/repos/osm-fr/osmose-frontend,1398491,osmose-frontend,1,
+https://api.github.com/repos/pzread/furakus,397661,furakus,1,
+https://api.github.com/repos/anthonator/soulless,333289,soulless,1,
+https://api.github.com/repos/enterpriseready/enterpriseready,31949198,enterpriseready,1,
+https://api.github.com/repos/giagiannis/data-profiler,713698,data-profiler,1,
+https://api.github.com/repos/Kushki/kushki-android,10480885,kushki-android,1,
+https://api.github.com/repos/BaristaLabs/BaristaCore,5115006,BaristaCore,1,
+https://api.github.com/repos/alpinelab/website,312987,website,1,
+https://api.github.com/repos/gfw-api/gfw-forms-api,12231302,gfw-forms-api,1,
+https://api.github.com/repos/skystebnicki/chamel,4692742,chamel,1,
+https://api.github.com/repos/CentiTeam/neu,32728694,neu,1,
+https://api.github.com/repos/hung-phan/clojure-template,1483843,clojure-template,1,
+https://api.github.com/repos/micromata/projectforge,264634,projectforge,1,
+https://api.github.com/repos/Tanibox/tania,36511656,tania,1,
+https://api.github.com/repos/cmelion/generator-ng2-webpack,150854,generator-ng2-webpack,1,
+https://api.github.com/repos/Machy8/webloader,9576365,webloader,1,
+https://api.github.com/repos/QuantiModo/quantimodo-android-chrome-ios-web-app,2167256,quantimodo-android-chrome-ios-web-app,1,"""To manage the build and run options in your project via cli parameters is a hassle and does not scale very well in larger project teams. Therefore, we recommend to use a compose file, which can be versioned and should be checked into your project repository."""
+https://api.github.com/repos/acelaya/ZF-AcMailer,2484863,ZF-AcMailer,1,
+https://api.github.com/repos/eigentor/rufzeichen-online,954007,rufzeichen-online,1,
+https://api.github.com/repos/artisanofcode/python-broadway-sqlalchemy,1426209,python-broadway-sqlalchemy,1,
+https://api.github.com/repos/artofhuman/activeadmin_settings_cached,171757,activeadmin_settings_cached,1,
+https://api.github.com/repos/luckyframework/web,33252047,web,1,make setup easier
+https://api.github.com/repos/kevydotvinu/kevydotvinu.github.io,37652533,kevydotvinu.github.io,1,
+https://api.github.com/repos/sonatype/docker-nexus3,7495,docker-nexus3,1,
+https://api.github.com/repos/mmkal/handy-redis,9798358,handy-redis,1,
+https://api.github.com/repos/ForestAdmin/forest-express-mongoose,9048288,forest-express-mongoose,1,
+https://api.github.com/repos/vistadataproject/nodeVISTA,10823351,nodeVISTA,1,
+https://api.github.com/repos/cat-in-the-dark/old48_36_game,7808768,old48_36_game,1,
+https://api.github.com/repos/slidewiki/PDF-Service,11122400,PDF-Service,1,
+https://api.github.com/repos/Netuitive/netuitive_rails_agent,6770667,netuitive_rails_agent,1,
+https://api.github.com/repos/marcus-crane/pkgparse,12358015,pkgparse,1,
+https://api.github.com/repos/CodeforHawaii/ACLU,3287072,ACLU,1,
+https://api.github.com/repos/rca/issuebranch,64511,issuebranch,1,
+https://api.github.com/repos/karlhungus/dotfiles,589053,dotfiles,1,
+https://api.github.com/repos/buzzn/d0-reader,4667769,d0-reader,1,
+https://api.github.com/repos/ultra2/tauren-engine,229909,tauren-engine,1,
+https://api.github.com/repos/IIED-org/ccdlp,5625014,ccdlp,1,
+https://api.github.com/repos/tikasan/eventory,6099821,eventory,1,
+https://api.github.com/repos/twhtanghk/docker.esp8266,232922,docker.esp8266,1,
+https://api.github.com/repos/schollz/cowyo,3348662,cowyo,1,
+https://api.github.com/repos/vlsidlyarevich/Unity,10818612,Unity,1,
+https://api.github.com/repos/imazen/imageflow,247057,imageflow,1,
+https://api.github.com/repos/lobnek/pyaddepar,11434407,pyaddepar,1,
+https://api.github.com/repos/ftripier/spookyc,1904982,spookyc,1,to run tests
+https://api.github.com/repos/sameersbn/docker-mongodb,1343504,docker-mongodb,1,simplify starting container by coding parameters
+https://api.github.com/repos/gyng/rcanary,2398213,rcanary,1,simplify starting container by coding parameters and reducing the creation of containers to one commands instead of two
+https://api.github.com/repos/musale/musale.github.io,5682755,musale.github.io,1,
+https://api.github.com/repos/dceoy/ansible-dev,2347456,ansible-dev,1,
+https://api.github.com/repos/librairy/modeler-lda,12045487,modeler-lda,1,
+https://api.github.com/repos/Nyarum/noterius,5687750,noterius,1,
+https://api.github.com/repos/altvec/dotfiles,2779880,dotfiles,1,
+https://api.github.com/repos/sameersbn/docker-nginx,1343504,docker-nginx,1,a simpler alternative to docker command
+https://api.github.com/repos/msemys/esjc,11632997,esjc,1,to run tests locally
+https://api.github.com/repos/alseambusher/crontab-ui,143911,crontab-ui,1,"""Makes it easier to build & run the container"""
+https://api.github.com/repos/IAryan/edCTF,2030583,edCTF,1,
+https://api.github.com/repos/Beit-Hatfutsot/dbs-front,10193576,dbs-front,1,
+https://api.github.com/repos/selner/job_scooper_v4,3640884,job_scooper_v4,1,
+https://api.github.com/repos/ministryofjustice/opg-salt-formula,1346693,opg-salt-formula,1,
+https://api.github.com/repos/tesseract-ocr/tesseract,4859412,tesseract,1,
+https://api.github.com/repos/flightstats/hub,1106760,hub,1,
+https://api.github.com/repos/globality-corp/microcosm-elasticsearch,7850622,microcosm-elasticsearch,1,
+https://api.github.com/repos/LabExperimental-SIUA/LibreScan,2786357,LibreScan,1,
+https://api.github.com/repos/bugsnag/bugsnag-java,79562,bugsnag-java,1,
+https://api.github.com/repos/acs/scout,164151,scout,1,
+https://api.github.com/repos/zzsza/TIL,14269883,TIL,1,
+https://api.github.com/repos/Korilakkuma/x-piano,1976843,x-piano,1,
+https://api.github.com/repos/her0e1c1/pystock,1085053,pystock,1,
+https://api.github.com/repos/woohoolabs/harmony,2006747,harmony,1,make it easy to try simple examples
+https://api.github.com/repos/achung89/spar-component,14053022,spar-component,1,
+https://api.github.com/repos/AfricasTalkingLtd/africastalking.Net,9400230,africastalking.Net,1,
+https://api.github.com/repos/withinboredom/tyche,520857,tyche,1,
+https://api.github.com/repos/constantbourgois/Maupassant,22396420,Maupassant,1,
+https://api.github.com/repos/mkalkbrenner/search_api_solr_multilingual,10751,search_api_solr_multilingual,1,
+https://api.github.com/repos/agrc/gis.utah.gov,271301,gis.utah.gov,1,
+https://api.github.com/repos/Gmousse/dataframe-js,8203238,dataframe-js,1,
+https://api.github.com/repos/JrGoodle/clowder,1711180,clowder,1,"""Initial docker setup for future testing purposes."""
+https://api.github.com/repos/Euricom/case_docker_api,668993,case_docker_api,1,
+https://api.github.com/repos/MusicConnectionMachine/UnstructuredData,33866564,UnstructuredData,1,
